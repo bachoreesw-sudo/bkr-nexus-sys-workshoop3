@@ -1,20 +1,23 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEXUS SYS - Smart Station</title>
     
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.1/dist/chartjs-adapter-moment.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
-    
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/4148/4148281.png">
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -54,7 +57,7 @@
         .ph-value { font-family: 'Orbitron', sans-serif; font-size: 3.5rem; font-weight: 700; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
         .ph-label { font-size: 1rem; color: #aaa; text-transform: uppercase; letter-spacing: 2px; }
 
-        .trash-card { border-left: 5px solid var(--neon-yellow); background: linear-gradient(90deg, rgba(255,221,0,0.1) 0%, transparent 100%); }
+        .trash-card { border-left: 5px solid var(--neon-green); transition: 0.3s; }
 
         .btn-cyber { background: transparent; color: var(--neon-blue); border: 1px solid var(--neon-blue); font-family: 'Orbitron', sans-serif; transition: 0.3s; }
         .btn-cyber:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 20px var(--neon-blue); }
@@ -97,15 +100,17 @@
                             <div class="ph-label">pH Level</div>
                         </div>
                     </div>
-                    <div class="glass-card trash-card mt-4 text-start">
+                    
+                    <div class="glass-card trash-card mt-4 text-start" id="trash-card-ui" style="background: rgba(0,255,102,0.05);">
                         <div class="d-flex align-items-center">
-                            <i class="fa-solid fa-triangle-exclamation text-warning fs-3 me-3"></i>
+                            <i class="fa-solid fa-trash-can fs-1 me-3" id="trash-icon-ui" style="color: var(--neon-green);"></i>
                             <div>
-                                <h6 class="mb-0 text-warning fw-bold">สถานะขยะเต็ม (Ultrasonic)</h6>
-                                <small class="text-light" id="trash-time-display">ตรวจพบครั้งล่าสุด: --:-- น.</small>
+                                <h6 class="mb-0 fw-bold" id="trash-current-status" style="color: var(--neon-green);">สถานะขยะ: ปกติ</h6>
+                                <small class="text-light" id="trash-time-display">ตรวจพบขยะเต็มล่าสุด: --:-- น.</small>
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
 
@@ -178,27 +183,52 @@
     <div id="page-history" class="page-section">
         <button class="btn btn-outline-secondary mb-3" onclick="navTo('page-home')"><i class="fa-solid fa-arrow-left"></i> กลับหน้าหลัก</button>
         <div class="glass-card">
-            <h5 class="text-secondary mb-3"><i class="fa-regular fa-calendar-days"></i> ดูข้อมูลรายวัน</h5>
+            <h5 class="text-secondary mb-3"><i class="fa-regular fa-calendar-days"></i> ดูสรุปข้อมูลและกราฟรายวัน</h5>
+            
             <div class="input-group mb-4" style="max-width: 300px;">
                 <input type="date" id="history-date" class="form-control">
                 <button class="btn btn-outline-info" onclick="loadSpecificHistory()">ดึงข้อมูล</button>
             </div>
-            <div class="table-responsive">
-                <table class="table table-dark table-hover table-borderless">
-                    <thead style="border-bottom: 2px solid var(--neon-blue);">
-                        <tr><th>เวลา (Time)</th><th>ค่า pH</th><th>ระยะทาง (cm)</th></tr>
-                    </thead>
-                    <tbody id="history-table-body">
-                        <tr><td colspan="3" class="text-center text-muted">เลือกวันที่เพื่อดูข้อมูล</td></tr>
-                    </tbody>
-                </table>
+
+            <div class="row text-center mb-4" id="history-summary-box" style="display: none;">
+                <div class="col-md-4 mb-2">
+                    <div class="p-3 border rounded h-100" style="background: rgba(0, 243, 255, 0.05); border-color: var(--neon-blue) !important;">
+                        <h6 class="text-info"><i class="fa-solid fa-arrow-up"></i> Max pH สูงสุด</h6>
+                        <h2 id="hist-max-ph" class="text-white mb-0">--</h2>
+                        <small class="text-muted">เวลา: <span id="hist-max-time" class="text-info">--:--</span> น.</small>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <div class="p-3 border rounded h-100" style="background: rgba(255, 0, 60, 0.05); border-color: var(--neon-red) !important;">
+                        <h6 class="text-danger"><i class="fa-solid fa-arrow-down"></i> Min pH ต่ำสุด</h6>
+                        <h2 id="hist-min-ph" class="text-white mb-0">--</h2>
+                        <small class="text-muted">เวลา: <span id="hist-min-time" class="text-danger">--:--</span> น.</small>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <div class="p-3 border rounded h-100" style="background: rgba(255, 221, 0, 0.05); border-color: var(--neon-yellow) !important;">
+                        <h6 class="text-warning"><i class="fa-solid fa-trash-can"></i> แจ้งเตือนขยะเต็ม</h6>
+                        <h2 id="hist-trash-count" class="text-white mb-0">0 ครั้ง</h2>
+                        <div style="max-height: 40px; overflow-y: auto; margin-top: 5px;">
+                            <small id="hist-trash-times" class="text-warning" style="font-size: 0.8rem;">--</small>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            <div id="history-empty-msg" class="text-center text-muted py-4">
+                <i class="fa-solid fa-folder-open fs-1 mb-2 opacity-50"></i><br>เลือกวันที่เพื่อดูข้อมูล
+            </div>
+
+            <div id="history-chart-container" style="height: 350px; display: none;">
+                <canvas id="historyChart"></canvas>
+            </div>
+
         </div>
     </div>
 </div>
 
 <script>
-    // การเปลี่ยนหน้า UI
     function navTo(pageId) {
         document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
         document.getElementById(pageId).classList.add('active');
@@ -224,7 +254,6 @@
 </script>
 
 <script type="module">
-    // ✅ อัปเดตลิงก์ให้เป็นเวอร์ชันเดียวกัน (10.10.0) ทั้งหมดเพื่อความเสถียร
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
     import { getDatabase, ref, onValue, set, update, get } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
 
@@ -243,103 +272,73 @@
     }
 
     let bleRelayChar = null;
+    let historyChartInstance = null; // เก็บตัวแปรกราฟหน้า History
 
     if (db) {
         // =======================================================
-        // ✅ 1. สร้างกราฟแบบ "ดูทั้งวัน" และ "ซูมได้" (Zoom & Pan)
+        // 1. สร้างกราฟหน้าแรก (REALTIME CHART)
         // =======================================================
-        const todayStr = new Date().toISOString().split('T')[0];
-        const ctx = document.getElementById('todayChart').getContext('2d');
+        const d = new Date();
+        const todayStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
         
+        const ctx = document.getElementById('todayChart').getContext('2d');
         const todayChart = new Chart(ctx, {
             type: 'line',
             data: {
                 datasets: [{
                     label: 'pH Level',
-                    data: [], // ปล่อยว่างไว้ รอโหลด
+                    data: [],
                     borderColor: '#00f3ff',
                     backgroundColor: 'rgba(0, 243, 255, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.1, // ลดความย้วย ให้เส้นดูเฉียบคมขึ้น
-                    pointRadius: 1, // ลดขนาดจุดลง เพื่อให้เห็นเส้นชัดกว่า
-                    pointHoverRadius: 6,
-                    spanGaps: true // ✅ บังคับลากเส้นเชื่อมกันเสมอ แม้มีช่วงเวลาขาดหาย
+                    borderWidth: 2, fill: true, tension: 0.1, pointRadius: 1, pointHoverRadius: 6, spanGaps: true
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
+                responsive: true, maintainAspectRatio: false,
                 scales: {
                     x: {
                         type: 'time', 
-                        time: {
-                            unit: 'minute',
-                            displayFormats: { minute: 'HH:mm', hour: 'HH:mm' }
-                        },
-                        min: todayStr + 'T00:00:00', // ล็อกเวลาเริ่ม 00:00
-                        max: todayStr + 'T23:59:59', // ล็อกเวลาจบ 23:59
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                        ticks: { color: '#aaa' }
+                        time: { unit: 'minute', displayFormats: { minute: 'HH:mm', hour: 'HH:mm' } },
+                        min: todayStr + 'T00:00:00', max: todayStr + 'T23:59:59',
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#aaa' }
                     },
-                    y: {
-                        min: 0,
-                        max: 14,
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                        ticks: { color: '#aaa' }
-                    }
+                    y: { min: 0, max: 14, grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#aaa' } }
                 },
                 plugins: {
                     legend: { display: false },
-                    tooltip: {
-                        mode: 'index', intersect: false,
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)', titleColor: '#00f3ff',
+                    tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(0,0,0,0.8)', titleColor: '#00f3ff',
                         callbacks: {
-                            title: (tooltipItems) => new Date(tooltipItems[0].parsed.x).toLocaleTimeString('th-TH'),
-                            label: (context) => ` pH: ${context.parsed.y.toFixed(2)}`
+                            title: (t) => new Date(t[0].parsed.x).toLocaleTimeString('th-TH'),
+                            label: (c) => ` pH: ${c.parsed.y.toFixed(2)}`
                         }
                     },
-                    zoom: {
-                        pan: { enabled: true, mode: 'x' },
-                        zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
-                    }
+                    zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' } }
                 }
             }
         });
 
-        // =======================================================
-        // ✅ 2. ระบบจัดการข้อมูล (โหลดประวัติก่อน -> ค่อยรับ Real-time)
-        // =======================================================
-        let globalMax = -99; 
-        let globalMin = 99;
-
-        // ขั้นตอนที่ 1: โหลดกราฟของทั้งวันมาก่อน (เพื่อไม่ให้ไปลบข้อมูลใหม่)
+        // โหลดกราฟของหน้าแรก
+        let globalMax = -99; let globalMin = 99;
         get(ref(db, 'history/' + todayStr)).then((snapshot) => {
             if(snapshot.exists()) {
                 const data = snapshot.val();
                 let points = [];
                 for(let timeKey in data) {
                     let ph = data[timeKey].ph !== undefined ? data[timeKey].ph : data[timeKey];
-                    // แปลงเวลาให้อยู่ในรูปแบบตัวเลข (Timestamp) ป้องกันกราฟงง
                     points.push({ x: new Date(todayStr + 'T' + timeKey).getTime(), y: ph });
-                    
                     if (ph > globalMax) globalMax = ph;
                     if (ph < globalMin) globalMin = ph;
                 }
-                points.sort((a, b) => a.x - b.x); // เรียงเวลาจากอดีต->ปัจจุบัน
-                
+                points.sort((a, b) => a.x - b.x);
                 todayChart.data.datasets[0].data = points;
                 todayChart.update();
-                
                 document.getElementById('today-max-ph').innerText = `Max: ${globalMax.toFixed(2)}`;
                 document.getElementById('today-min-ph').innerText = `Min: ${globalMin.toFixed(2)}`;
             }
             
-            // ขั้นตอนที่ 2: พอโหลดประวัติเสร็จ "ค่อยเปิดประตู" รับข้อมูล Real-time
+            // รอรับค่า Real-time
             onValue(ref(db, 'sensor/ph'), (snap) => {
                 const val = snap.val() || 0;
-                
-                // อัปเดต UI วงกลม
                 document.getElementById('ph-display').innerText = val.toFixed(2);
                 const circle = document.getElementById('ph-circle-ui');
                 let color = 'var(--neon-green)';
@@ -348,7 +347,6 @@
                 circle.style.borderColor = color;
                 circle.style.boxShadow = `0 0 30px ${color}, inset 0 0 20px ${color}`;
 
-                // อัปเดต Max/Min
                 let isNewMaxMin = false;
                 if (val > globalMax) { globalMax = val; isNewMaxMin = true; }
                 if (val < globalMin) { globalMin = val; isNewMaxMin = true; }
@@ -357,37 +355,151 @@
                     document.getElementById('today-min-ph').innerText = `Min: ${globalMin.toFixed(2)}`;
                 }
 
-                // ดันจุดใหม่เข้ากราฟ (ใช้ Date.now() เป็นตัวเลข)
                 if (todayChart) {
-                    todayChart.data.datasets[0].data.push({
-                        x: Date.now(),
-                        y: val
-                    });
-                    todayChart.update('quiet'); // ลากเส้นต่อทันทีโดยไม่กระตุก
+                    todayChart.data.datasets[0].data.push({ x: Date.now(), y: val });
+                    todayChart.update('quiet');
                 }
             });
         });
 
         // =======================================================
-        // โค้ดเดิมของคุณที่เหลือ (แจ้งเตือน, Relay, ดูประวัติ) ปลอดภัย 100%
+        // ✅ 2. ระบบเซ็นเซอร์ขยะ (หน้าแรก) - โชว์สถานะปัจจุบัน
         // =======================================================
-
         onValue(ref(db, 'sensor/distance'), (snapshot) => {
             const dist = snapshot.val() || 0;
+            const iconUI = document.getElementById('trash-icon-ui');
+            const statusUI = document.getElementById('trash-current-status');
+            const cardUI = document.getElementById('trash-card-ui');
+
             if(dist > 0 && dist < 30) {
+                // ขยะเต็ม (แดง)
+                iconUI.className = "fa-solid fa-triangle-exclamation fs-1 me-3";
+                iconUI.style.color = "var(--neon-red)";
+                statusUI.innerText = `สถานะขยะ: เต็ม! (${dist.toFixed(1)} cm)`;
+                statusUI.style.color = "var(--neon-red)";
+                cardUI.style.borderLeftColor = "var(--neon-red)";
+                cardUI.style.background = "rgba(255, 0, 60, 0.1)";
+
                 const now = new Date();
                 const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-                document.getElementById('trash-time-display').innerText = `ตรวจพบครั้งล่าสุด: วันนี้เวลา ${timeStr} น.`;
+                document.getElementById('trash-time-display').innerText = `ตรวจพบขยะเต็มล่าสุด: วันนี้ ${timeStr} น.`;
                 set(ref(db, 'sensor/last_trash_time'), timeStr);
+            } else {
+                // ปกติ (เขียว)
+                iconUI.className = "fa-solid fa-trash-can fs-1 me-3";
+                iconUI.style.color = "var(--neon-green)";
+                statusUI.innerText = `สถานะขยะ: ปกติ (${dist.toFixed(1)} cm)`;
+                statusUI.style.color = "var(--neon-green)";
+                cardUI.style.borderLeftColor = "var(--neon-green)";
+                cardUI.style.background = "rgba(0, 255, 102, 0.05)";
             }
         });
 
-        onValue(ref(db, 'sensor/last_trash_time'), (snapshot) => {
-            if(snapshot.exists()) {
-                document.getElementById('trash-time-display').innerText = `ตรวจพบครั้งล่าสุด: เวลา ${snapshot.val()} น.`;
-            }
-        });
+        // =======================================================
+        // ✅ 3. ระบบดูประวัติย้อนหลัง (กราฟ + สรุปค่า)
+        // =======================================================
+        document.getElementById('history-date').value = todayStr;
 
+        window.loadSpecificHistory = function() {
+            const date = document.getElementById('history-date').value;
+            const emptyMsg = document.getElementById('history-empty-msg');
+            const summaryBox = document.getElementById('history-summary-box');
+            const chartContainer = document.getElementById('history-chart-container');
+            
+            emptyMsg.innerHTML = `<i class="fa-solid fa-spinner fa-spin fs-1 mb-2 text-info"></i><br>กำลังดึงข้อมูล...`;
+            emptyMsg.style.display = 'block';
+            summaryBox.style.display = 'none';
+            chartContainer.style.display = 'none';
+
+            get(ref(db, 'history/' + date)).then((snapshot) => {
+                if(snapshot.exists()) {
+                    const data = snapshot.val();
+                    let histMaxPh = -99, histMinPh = 99;
+                    let histMaxTime = "--:--", histMinTime = "--:--";
+                    let trashAlertTimes = [];
+                    let points = [];
+
+                    // วนลูปหาค่าสูงสุด/ต่ำสุด และกราฟ
+                    for(let timeKey in data) {
+                        let ph = data[timeKey].ph !== undefined ? data[timeKey].ph : data[timeKey];
+                        let dist = data[timeKey].distance || data[timeKey].dist || 0;
+                        
+                        points.push({ x: new Date(date + 'T' + timeKey).getTime(), y: ph });
+                        
+                        if(ph > histMaxPh) { histMaxPh = ph; histMaxTime = timeKey; }
+                        if(ph < histMinPh) { histMinPh = ph; histMinTime = timeKey; }
+                        
+                        // ถ้าระยะทางเข้าข่ายขยะเต็ม ให้เก็บเวลาไว้
+                        if(dist > 0 && dist < 30) {
+                            trashAlertTimes.push(timeKey);
+                        }
+                    }
+                    points.sort((a, b) => a.x - b.x); // เรียงเวลา
+
+                    // อัปเดตช่องสรุปข้อมูล
+                    document.getElementById('hist-max-ph').innerText = histMaxPh.toFixed(2);
+                    document.getElementById('hist-max-time').innerText = histMaxTime;
+                    document.getElementById('hist-min-ph').innerText = histMinPh.toFixed(2);
+                    document.getElementById('hist-min-time').innerText = histMinTime;
+                    
+                    document.getElementById('hist-trash-count').innerText = `${trashAlertTimes.length} ครั้ง`;
+                    // เอาเฉพาะเวลาที่ไม่ซ้ำและติดๆ กันออก หรือแค่พ่นออกมาเลย
+                    let trashStr = trashAlertTimes.length > 0 ? [...new Set(trashAlertTimes)].join(", ") : "ไม่มีการแจ้งเตือน";
+                    document.getElementById('hist-trash-times').innerText = trashStr;
+
+                    // เปิดโชว์ UI สรุป
+                    emptyMsg.style.display = 'none';
+                    summaryBox.style.display = 'flex';
+                    chartContainer.style.display = 'block';
+
+                    // วาดกราฟ History (สไตล์สีส้ม/แดงเพื่อให้ต่างจากหน้าแรก)
+                    if(historyChartInstance) historyChartInstance.destroy();
+                    const ctxH = document.getElementById('historyChart').getContext('2d');
+                    historyChartInstance = new Chart(ctxH, {
+                        type: 'line',
+                        data: {
+                            datasets: [{
+                                label: 'History pH',
+                                data: points,
+                                borderColor: '#ff003c', // สีแดง Neon
+                                backgroundColor: 'rgba(255, 0, 60, 0.1)',
+                                borderWidth: 2, fill: true, tension: 0.1, pointRadius: 1, pointHoverRadius: 6, spanGaps: true
+                            }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            scales: {
+                                x: {
+                                    type: 'time', 
+                                    time: { unit: 'minute', displayFormats: { minute: 'HH:mm', hour: 'HH:mm' } },
+                                    min: date + 'T00:00:00', max: date + 'T23:59:59',
+                                    grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#aaa' }
+                                },
+                                y: { min: 0, max: 14, grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#aaa' } }
+                            },
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(0,0,0,0.8)', titleColor: '#ff003c',
+                                    callbacks: {
+                                        title: (t) => new Date(t[0].parsed.x).toLocaleTimeString('th-TH'),
+                                        label: (c) => ` pH: ${c.parsed.y.toFixed(2)}`
+                                    }
+                                },
+                                zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' } }
+                            }
+                        }
+                    });
+
+                } else {
+                    emptyMsg.innerHTML = `<i class="fa-solid fa-folder-open fs-1 mb-2 opacity-50"></i><br>ไม่พบข้อมูลประวัติของวันที่ ${date}`;
+                }
+            });
+        };
+        loadSpecificHistory(); // โหลดวันปัจจุบันตอนเปิดเว็บเลย
+
+        // =======================================================
+        // ระบบ Relay & Schedule เดิม
+        // =======================================================
         onValue(ref(db, 'control/relay'), (snapshot) => {
             const status = snapshot.val();
             const textEl = document.getElementById('relay-status-text');
@@ -397,9 +509,8 @@
 
         window.setRelay = async function(state) { 
             if (bleRelayChar) {
-                try {
-                    await bleRelayChar.writeValue(new Uint8Array([state ? 49 : 48]));
-                } catch(e) { console.error("BLE Send Error", e); }
+                try { await bleRelayChar.writeValue(new Uint8Array([state ? 49 : 48])); } 
+                catch(e) { console.error("BLE Send Error", e); }
             }
             set(ref(db, 'control/relay'), state); 
         };
@@ -428,34 +539,8 @@
             if(snapshot.exists()) {
                 const data = snapshot.val();
                 for(let key in data) { addScheduleSlot(data[key].start, data[key].end); }
-            } else {
-                addScheduleSlot("08:00", "10:00");
-            }
+            } else { addScheduleSlot("08:00", "10:00"); }
         });
-
-        // ตารางย้อนหลัง
-        const todayStrForHistory = new Date().toISOString().split('T')[0];
-        document.getElementById('history-date').value = todayStrForHistory;
-
-        window.loadSpecificHistory = function() {
-            const date = document.getElementById('history-date').value;
-            const tbody = document.getElementById('history-table-body');
-            tbody.innerHTML = `<tr><td colspan="3" class="text-center text-info"><i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลด...</td></tr>`;
-            get(ref(db, 'history/' + date)).then((snapshot) => {
-                tbody.innerHTML = "";
-                if(snapshot.exists()) {
-                    const data = snapshot.val();
-                    for(let time in data) {
-                        let ph = data[time].ph || data[time];
-                        let dist = data[time].distance || data[time].dist || 0;
-                        tbody.innerHTML += `<tr><td>${time}</td><td><span class="text-info">${parseFloat(ph).toFixed(2)}</span></td><td>${parseFloat(dist).toFixed(1)}</td></tr>`;
-                    }
-                } else {
-                    tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted">ไม่พบข้อมูลของวันที่เลือก</td></tr>`;
-                }
-            });
-        };
-        loadSpecificHistory();
     }
 
     // === ระบบ Bluetooth Gateway ===
@@ -463,16 +548,14 @@
         const indicator = document.getElementById('mode-indicator');
         try {
             indicator.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> SCANNING...`;
-            
             const device = await navigator.bluetooth.requestDevice({
                 filters: [{ name: 'ESP32_Agri_Board' }],
                 optionalServices: ['19b10000-e8f2-537e-4f6c-d104768a1214']
             });
-            
             const server = await device.gatt.connect();
             const service = await server.getPrimaryService('19b10000-e8f2-537e-4f6c-d104768a1214');
-            
             const sensorChar = await service.getCharacteristic('19b10001-e8f2-537e-4f6c-d104768a1214');
+            
             await sensorChar.startNotifications();
             sensorChar.addEventListener('characteristicvaluechanged', (event) => {
                 let data = JSON.parse(new TextDecoder().decode(event.target.value));
@@ -494,7 +577,6 @@
                 indicator.innerHTML = `<i class="fa-solid fa-wifi"></i> CLOUD MODE`;
                 bleRelayChar = null;
             });
-            
         } catch(e) {
             console.error("Bluetooth Error:", e);
             indicator.className = "badge border border-success text-success";
