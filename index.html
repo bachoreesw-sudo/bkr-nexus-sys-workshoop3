@@ -1,23 +1,22 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEXUS SYS - Smart Station</title>
     
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1"></script>
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.1/dist/chartjs-adapter-moment.min.js"></script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1"></script>
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/4148/4148281.png">
+    
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -72,13 +71,91 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
         .form-control, .form-control:focus { background: rgba(0,0,0,0.5); border: 1px solid #333; color: #fff; }
+
+        .team-banner {
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid var(--neon-blue);
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+        }
+        .team-banner:hover {
+            box-shadow: 0 0 20px var(--neon-blue);
+            transform: scale(1.02);
+        }
+        .team-banner-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;
+            opacity: 0; transition: 0.3s;
+        }
+        .team-banner:hover .team-banner-overlay { opacity: 1; }
+        
+        .member-card {
+            cursor: pointer;
+            transition: 0.3s;
+            border-radius: 15px;
+            padding: 10px;
+        }
+        .member-card:hover {
+            background: rgba(0, 243, 255, 0.1);
+            transform: translateY(-5px);
+        }
+        
+        /* ✅ โซนบังคับรูปโปรไฟล์ให้เป็นวงกลม (ใช้เทคนิค Wrapper ชัวร์ 100%) */
+        .img-wrapper {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 10px auto;
+            border-radius: 50% !important; /* บังคับกรอบให้กลม */
+            border: 3px solid var(--neon-green);
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.3);
+            overflow: hidden !important; /* ✅ ตัดส่วนที่ล้นกรอบทิ้งทั้งหมด */
+            transition: 0.3s;
+            background-color: #1a233a;
+        }
+        .img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover !important; /* บังคับรูปไม่ให้เบี้ยว */
+            display: block;
+        }
+        .member-card:hover .img-wrapper {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.6);
+        }
+
+        .modal-content.glass-theme {
+            background: rgba(11, 15, 25, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--neon-blue);
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.2);
+        }
+
+        /* CSS สำหรับหนังสือคู่มือเปิด */
+        .manual-banner {
+            background: linear-gradient(90deg, rgba(0,243,255,0.1) 0%, rgba(0,0,0,0) 100%);
+            border-left: 5px solid var(--neon-blue);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .manual-banner:hover { background: rgba(0,243,255,0.2); transform: translateX(5px); }
+        
+        @media (min-width: 768px) {
+            .book-page-left { border-right: 1px dashed rgba(0, 243, 255, 0.3); padding-right: 25px; }
+            .book-page-right { padding-left: 25px; }
+        }
+        .manual-topic { color: var(--neon-blue); font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid rgba(0,243,255,0.2); padding-bottom: 5px; }
+        .manual-list { padding-left: 20px; }
+        .manual-list li { margin-bottom: 10px; font-size: 0.95rem; color: #ccc; line-height: 1.5; }
+        .manual-list li strong { color: #fff; }
     </style>
 </head>
 <body>
 
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3">
-        <h2 style="font-family: 'Orbitron', sans-serif; text-shadow: 0 0 10px var(--neon-blue);"><i class="fa-solid fa-satellite-dish text-info"></i> BKR NEXUS SYS</h2>
+        <h2 style="font-family: 'Orbitron', sans-serif; text-shadow: 0 0 10px var(--neon-blue);"><i class="fa-solid fa-satellite-dish text-info"></i> 4BKR NEXUS SYS</h2>
         <div class="d-flex align-items-center gap-2">
             <div id="mode-indicator" class="badge border border-success text-success" style="background: rgba(0,255,102,0.1); font-family: 'Orbitron', sans-serif; padding: 8px 12px; letter-spacing: 1px;">
                 <i class="fa-solid fa-wifi"></i> CLOUD MODE
@@ -110,7 +187,6 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
 
@@ -143,6 +219,29 @@
                 </div>
             </div>
         </div>
+
+        <div class="glass-card manual-banner mt-4 text-start p-3" data-bs-toggle="modal" data-bs-target="#manualModal">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h5 class="mb-1 fw-bold text-white"><i class="fa-solid fa-book-open text-info me-2"></i> คู่มือการใช้งานระบบ (User Manual)</h5>
+                    <small class="text-info">คลิกเพื่ออ่านคำแนะนำ ข้อควรระวัง และข้อจำกัดในการใช้งาน</small>
+                </div>
+                <i class="fa-solid fa-chevron-right fs-4 text-info"></i>
+            </div>
+        </div>
+
+        <div class="glass-card text-center mt-2">
+            <h5 class="text-secondary mb-3"><i class="fa-solid fa-users"></i> คณะผู้จัดทำโครงงาน</h5>
+            <div class="team-banner" data-bs-toggle="modal" data-bs-target="#teamModal">
+                <div class="ratio ratio-16x9">
+                    <img src="https://github.com/bachoreesw-sudo/bkr-nexus-sys-workshoop-/blob/main/p1.jpg.png?raw=true">
+                </div>
+                <div class="team-banner-overlay">
+                    <h3 class="text-white fw-bold"><i class="fa-solid fa-hand-pointer"></i> คลิกเพื่อดูประวัติสมาชิก</h3>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <div id="page-relay" class="page-section">
@@ -228,12 +327,157 @@
     </div>
 </div>
 
+<div class="modal fade" id="manualModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content glass-theme">
+            <div class="modal-header border-secondary">
+                <h4 class="modal-title fw-bold" style="color: var(--neon-blue);">
+                    <i class="fa-solid fa-book-open"></i> คู่มือการใช้งาน NEXUS SYS
+                </h4>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 p-md-5">
+                <div class="row">
+                    <div class="col-md-6 book-page-left mb-4 mb-md-0">
+                        <h5 class="manual-topic"><i class="fa-solid fa-desktop"></i> 1. วิธีการใช้งานระบบพื้นฐาน</h5>
+                        <ul class="manual-list">
+                            <li><strong>โหมดการเชื่อมต่อ:</strong> ระบบเริ่มต้นทำงานใน "Cloud Mode" (ผ่าน Wi-Fi และ Firebase) หากอินเทอร์เน็ตมีปัญหา สามารถกดปุ่มไอคอน Bluetooth ที่มุมขวาบนเพื่อสลับมาสั่งงานระยะใกล้ได้</li>
+                            <li><strong>การมอนิเตอร์กราฟ (Zoom & Pan):</strong> กราฟหน้าแรกจะแสดงข้อมูลของวันนี้ทั้งวัน คุณสามารถใช้นิ้วถ่าง (Pinch) หรือใช้ลูกกลิ้งเมาส์ (Scroll) เพื่อซูมเข้าไปดูช่วงเวลาที่ต้องการแบบเจาะลึกได้</li>
+                            <li><strong>การควบคุมปั๊มน้ำ:</strong> ในเมนู Relay รองรับการสั่งเปิด-ปิดทันที, การตั้งเวลาถอยหลัง (Countdown) เพื่อให้ปั๊มปิดเองอัตโนมัติ และการตั้งตารางเวลา (Schedule Timer) ให้ปั๊มทำงานตามเวลาที่กำหนดทุกวัน</li>
+                            <li><strong>การดูสรุปข้อมูลย้อนหลัง:</strong> เข้าเมนู "ประวัติย้อนหลัง" เลือกวันที่ต้องการ ระบบจะสรุปค่า pH สูงสุด-ต่ำสุด พร้อมระบุเวลา และแสดงความถี่ในการแจ้งเตือนขยะเต็มของวันนั้นๆ</li>
+                        </ul>
+
+                        <h5 class="manual-topic mt-4"><i class="fa-solid fa-gears"></i> 2. ข้อมูลเชิงลึกของระบบ</h5>
+                        <ul class="manual-list">
+                            <li><strong>เกณฑ์การแจ้งเตือนขยะ:</strong> เซ็นเซอร์ Ultrasonic ถูกตั้งค่าไว้ที่ระยะ <strong>น้อยกว่า 30 ซม.</strong> หากระยะขยะใกล้เซ็นเซอร์เกินค่านี้ ระบบจะแจ้งเตือนสถานะ "เต็ม!" และเปลี่ยนเป็นกรอบสีแดงทันที</li>
+                            <li><strong>เกณฑ์สีของค่า pH:</strong> กรอบวงกลม pH จะเปลี่ยนสีตามค่าความเป็นกรด-ด่าง ได้แก่ สีเหลือง (pH < 6.5), สีเขียวปกติ (pH 6.5 - 7.5), และสีแดง (pH > 7.5)</li>
+                        </ul>
+                    </div>
+
+                    <div class="col-md-6 book-page-right">
+                        <h5 class="manual-topic text-warning"><i class="fa-solid fa-triangle-exclamation"></i> 3. ข้อควรระวังในการบำรุงรักษา</h5>
+                        <ul class="manual-list">
+                            <li><strong>เซ็นเซอร์วัดค่า pH:</strong> หัววัดแก้วมีความเปราะบางสูง <strong>ห้ามปล่อยให้หัววัดแห้งเด็ดขาด</strong> หลังการใช้งานควรล้างด้วยน้ำกลั่น และเก็บรักษาในน้ำยา KCL เสมอ การวัดในของเหลวที่มีอุณหภูมิสูงเกินไปอาจทำให้อายุการใช้งานสั้นลง</li>
+                            <li><strong>เซ็นเซอร์ Ultrasonic (HC-SR04):</strong> เป็นอุปกรณ์อิเล็กทรอนิกส์ที่ไม่กันน้ำ ควรติดตั้งในมุมที่หลีกเลี่ยงน้ำฝนสาด หรือความชื้นสะสมโดยตรง เพื่อป้องกันการลัดวงจร</li>
+                            <li><strong>กล่องคอนโทรล (ESP32):</strong> ควรตรวจสอบซีลยางหรือกล่องกันน้ำอย่างสม่ำเสมอ หากมีแมลงหรือความชื้นเข้าไปเกาะที่บอร์ด อาจทำให้ระบบสั่งการ Relay รวนหรือไฟลัดวงจรได้</li>
+                        </ul>
+
+                        <h5 class="manual-topic text-danger mt-4"><i class="fa-solid fa-ban"></i> 4. ข้อจำกัดของระบบ (Limitations)</h5>
+                        <ul class="manual-list">
+                            <li><strong>การสะท้อนคลื่นเสียงขยะ:</strong> หากขยะมีลักษณะนุ่ม (เช่น ผ้า, โฟม) หรือวางทับถมในรูปทรงลาดเอียงรุนแรง คลื่นเสียงอาจสะท้อนกลับไม่เต็มที่ ทำให้การวัดความสูงของขยะเกิดความคลาดเคลื่อนได้</li>
+                            <li><strong>ระยะการเชื่อมต่อ Bluetooth:</strong> ทำงานได้เสถียรที่สุดในระยะไม่เกิน <strong>10 เมตร</strong> (ในพื้นที่โล่ง) หากมีกำแพงหนากั้น สัญญาณอาจขาดหายได้</li>
+                            <li><strong>การพึ่งพาอินเทอร์เน็ต:</strong> หากจุดติดตั้งบอร์ด Wi-Fi หลุดหรือสัญญาณอ่อน ข้อมูลแบบ Real-time และการบันทึก History บนเว็บกราฟจะไม่ถูกอัปเดตจนกว่าจะเชื่อมต่อได้อีกครั้ง</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary justify-content-center">
+                <button type="button" class="btn btn-outline-info" data-bs-dismiss="modal">รับทราบ & ปิดคู่มือ</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="teamModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content glass-theme">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title fw-bold" style="color: var(--neon-blue);">
+                    <i class="fa-solid fa-id-card"></i> เลือกดูประวัติสมาชิก
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                <div class="row text-center g-4">
+                    
+                    <div class="col-6 col-md-3 member-card" data-bs-target="#memberDetailModal" data-bs-toggle="modal" 
+                         onclick="updateMemberDetail('https://github.com/bachoreesw-sudo/bkr-nexus-sys-workshoop-/blob/main/555.jpg?raw=true', 'นายบาฆอรี เจ๊ะหะ', 'ที่ปรึกษาเขียนโปรแกรม', 'ประวัติคร่าวๆ : เหรียญทองการแข่งขันหุ่นยนต์เยาว์ชน INNOVEDEXระดับประเทศ ชนะการแข่งขันโครงงาน ม.ราชฎัชยะลา ชนะการแข่งขันPLC มนร. ')">
+                        <div class="img-wrapper">
+                            <img src="https://github.com/bachoreesw-sudo/bkr-nexus-sys-workshoop-/blob/main/555.jpg?raw=true">
+                        </div>
+                        <h6 class="text-white fw-bold mt-2 mb-1">นายบาฆอรี  เจ๊ะหะ ที่ปรึกษาพิเศษ</h6>
+                        <small class="text-info">คลิกเพื่อดูประวัติ</small>
+                    </div>
+
+                    <div class="col-6 col-md-3 member-card" data-bs-target="#memberDetailModal" data-bs-toggle="modal" 
+                         onclick="updateMemberDetail('https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80', 'นางสาว บี นามสมมุติ', 'ต่อวงจรไฟฟ้า', 'ประวัติคร่าวๆ: ผู้เชี่ยวชาญด้านฮาร์ดแวร์และการต่อวงจรไฟฟ้า รับผิดชอบการติดตั้งเซ็นเซอร์ pH และเซ็นเซอร์วัดระยะทาง (Ultrasonic) ให้ทำงานร่วมกันได้อย่างสมบูรณ์')">
+                        <div class="img-wrapper">
+                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80" alt="Member 2">
+                        </div>
+                        <h6 class="text-white fw-bold mt-2 mb-1">นางสาว บี นามสมมุติ</h6>
+                        <small class="text-info">คลิกเพื่อดูประวัติ</small>
+                    </div>
+
+                    <div class="col-6 col-md-3 member-card" data-bs-target="#memberDetailModal" data-bs-toggle="modal" 
+                         onclick="updateMemberDetail('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80', 'นาย ซี นามสมมุติ', 'จัดทำรูปเล่มโครงงาน', 'ประวัติคร่าวๆ: รับหน้าที่ในการรวบรวมข้อมูล วิเคราะห์ผล และเรียบเรียงเนื้อหาโครงงานทั้งหมดออกมาเป็นรูปเล่มที่สมบูรณ์และถูกต้องตามหลักวิชาการ')">
+                        <div class="img-wrapper">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80" alt="Member 3">
+                        </div>
+                        <h6 class="text-white fw-bold mt-2 mb-1">นาย ซี นามสมมุติ</h6>
+                        <small class="text-info">คลิกเพื่อดูประวัติ</small>
+                    </div>
+
+                    <div class="col-6 col-md-3 member-card" data-bs-target="#memberDetailModal" data-bs-toggle="modal" 
+                         onclick="updateMemberDetail('https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=400&q=80', 'นางสาว ดี นามสมมุติ', 'ออกแบบ UI / UX', 'ประวัติคร่าวๆ: สายอาร์ตประจำกลุ่ม ดูแลการออกแบบหน้าจอแสดงผล (Web App) ให้ดูทันสมัย ใช้งานง่าย และสวยงามตรงตามความต้องการของผู้ใช้งาน')">
+                        <div class="img-wrapper">
+                            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=400&q=80" alt="Member 4">
+                        </div>
+                        <h6 class="text-white fw-bold mt-2 mb-1">นางสาว ดี นามสมมุติ</h6>
+                        <small class="text-info">คลิกเพื่อดูประวัติ</small>
+                    </div>
+
+                </div>
+            </div>
+            <div class="modal-footer border-secondary justify-content-center">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">ปิดหน้าต่าง</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="memberDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-theme text-center">
+            <div class="modal-header border-secondary d-flex justify-content-between">
+                <button class="btn btn-sm btn-outline-info" data-bs-target="#teamModal" data-bs-toggle="modal">
+                    <i class="fa-solid fa-arrow-left"></i> กลับ
+                </button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                
+                <div class="img-wrapper mx-auto" style="width: 180px; height: 180px; border-color: var(--neon-blue);">
+                    <img id="detail-img" src="" alt="Profile Detail">
+                </div>
+                
+                <h3 id="detail-name" class="text-white fw-bold mt-3 mb-1" style="text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);">Name</h3>
+                <h5 id="detail-role" class="text-info mb-4" style="letter-spacing: 1px;">Role</h5>
+                <div class="glass-card text-start p-3 m-0" style="background: rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.2);">
+                    <h6 class="text-secondary mb-2"><i class="fa-solid fa-address-book"></i> ประวัติส่วนตัว / ข้อมูล</h6>
+                    <p id="detail-bio" class="text-light mb-0" style="font-size: 0.95rem; line-height: 1.6;">Bio here...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     function navTo(pageId) {
         document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
         document.getElementById(pageId).classList.add('active');
         window.scrollTo(0, 0);
+
+        if (pageId === 'page-history' && typeof window.loadSpecificHistory === 'function') {
+            window.loadSpecificHistory();
+        }
     }
+
+    window.updateMemberDetail = function(imgSrc, name, role, bio) {
+        document.getElementById('detail-img').src = imgSrc;
+        document.getElementById('detail-name').innerText = name;
+        document.getElementById('detail-role').innerText = `หน้าที่: ${role}`;
+        document.getElementById('detail-bio').innerText = bio;
+    };
 
     let scheduleCount = 0;
     function addScheduleSlot(start = "", end = "") {
@@ -272,12 +516,9 @@
     }
 
     let bleRelayChar = null;
-    let historyChartInstance = null; // เก็บตัวแปรกราฟหน้า History
+    let historyChartInstance = null; 
 
     if (db) {
-        // =======================================================
-        // 1. สร้างกราฟหน้าแรก (REALTIME CHART)
-        // =======================================================
         const d = new Date();
         const todayStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
         
@@ -317,7 +558,6 @@
             }
         });
 
-        // โหลดกราฟของหน้าแรก
         let globalMax = -99; let globalMin = 99;
         get(ref(db, 'history/' + todayStr)).then((snapshot) => {
             if(snapshot.exists()) {
@@ -336,7 +576,6 @@
                 document.getElementById('today-min-ph').innerText = `Min: ${globalMin.toFixed(2)}`;
             }
             
-            // รอรับค่า Real-time
             onValue(ref(db, 'sensor/ph'), (snap) => {
                 const val = snap.val() || 0;
                 document.getElementById('ph-display').innerText = val.toFixed(2);
@@ -362,9 +601,6 @@
             });
         });
 
-        // =======================================================
-        // ✅ 2. ระบบเซ็นเซอร์ขยะ (หน้าแรก) - โชว์สถานะปัจจุบัน
-        // =======================================================
         onValue(ref(db, 'sensor/distance'), (snapshot) => {
             const dist = snapshot.val() || 0;
             const iconUI = document.getElementById('trash-icon-ui');
@@ -372,7 +608,6 @@
             const cardUI = document.getElementById('trash-card-ui');
 
             if(dist > 0 && dist < 30) {
-                // ขยะเต็ม (แดง)
                 iconUI.className = "fa-solid fa-triangle-exclamation fs-1 me-3";
                 iconUI.style.color = "var(--neon-red)";
                 statusUI.innerText = `สถานะขยะ: เต็ม! (${dist.toFixed(1)} cm)`;
@@ -385,7 +620,6 @@
                 document.getElementById('trash-time-display').innerText = `ตรวจพบขยะเต็มล่าสุด: วันนี้ ${timeStr} น.`;
                 set(ref(db, 'sensor/last_trash_time'), timeStr);
             } else {
-                // ปกติ (เขียว)
                 iconUI.className = "fa-solid fa-trash-can fs-1 me-3";
                 iconUI.style.color = "var(--neon-green)";
                 statusUI.innerText = `สถานะขยะ: ปกติ (${dist.toFixed(1)} cm)`;
@@ -395,9 +629,6 @@
             }
         });
 
-        // =======================================================
-        // ✅ 3. ระบบดูประวัติย้อนหลัง (กราฟ + สรุปค่า)
-        // =======================================================
         document.getElementById('history-date').value = todayStr;
 
         window.loadSpecificHistory = function() {
@@ -419,7 +650,6 @@
                     let trashAlertTimes = [];
                     let points = [];
 
-                    // วนลูปหาค่าสูงสุด/ต่ำสุด และกราฟ
                     for(let timeKey in data) {
                         let ph = data[timeKey].ph !== undefined ? data[timeKey].ph : data[timeKey];
                         let dist = data[timeKey].distance || data[timeKey].dist || 0;
@@ -429,30 +659,25 @@
                         if(ph > histMaxPh) { histMaxPh = ph; histMaxTime = timeKey; }
                         if(ph < histMinPh) { histMinPh = ph; histMinTime = timeKey; }
                         
-                        // ถ้าระยะทางเข้าข่ายขยะเต็ม ให้เก็บเวลาไว้
                         if(dist > 0 && dist < 30) {
                             trashAlertTimes.push(timeKey);
                         }
                     }
-                    points.sort((a, b) => a.x - b.x); // เรียงเวลา
+                    points.sort((a, b) => a.x - b.x);
 
-                    // อัปเดตช่องสรุปข้อมูล
                     document.getElementById('hist-max-ph').innerText = histMaxPh.toFixed(2);
                     document.getElementById('hist-max-time').innerText = histMaxTime;
                     document.getElementById('hist-min-ph').innerText = histMinPh.toFixed(2);
                     document.getElementById('hist-min-time').innerText = histMinTime;
                     
                     document.getElementById('hist-trash-count').innerText = `${trashAlertTimes.length} ครั้ง`;
-                    // เอาเฉพาะเวลาที่ไม่ซ้ำและติดๆ กันออก หรือแค่พ่นออกมาเลย
                     let trashStr = trashAlertTimes.length > 0 ? [...new Set(trashAlertTimes)].join(", ") : "ไม่มีการแจ้งเตือน";
                     document.getElementById('hist-trash-times').innerText = trashStr;
 
-                    // เปิดโชว์ UI สรุป
                     emptyMsg.style.display = 'none';
                     summaryBox.style.display = 'flex';
                     chartContainer.style.display = 'block';
 
-                    // วาดกราฟ History (สไตล์สีส้ม/แดงเพื่อให้ต่างจากหน้าแรก)
                     if(historyChartInstance) historyChartInstance.destroy();
                     const ctxH = document.getElementById('historyChart').getContext('2d');
                     historyChartInstance = new Chart(ctxH, {
@@ -461,7 +686,7 @@
                             datasets: [{
                                 label: 'History pH',
                                 data: points,
-                                borderColor: '#ff003c', // สีแดง Neon
+                                borderColor: '#ff003c',
                                 backgroundColor: 'rgba(255, 0, 60, 0.1)',
                                 borderWidth: 2, fill: true, tension: 0.1, pointRadius: 1, pointHoverRadius: 6, spanGaps: true
                             }]
@@ -495,11 +720,8 @@
                 }
             });
         };
-        loadSpecificHistory(); // โหลดวันปัจจุบันตอนเปิดเว็บเลย
+        loadSpecificHistory();
 
-        // =======================================================
-        // ระบบ Relay & Schedule เดิม
-        // =======================================================
         onValue(ref(db, 'control/relay'), (snapshot) => {
             const status = snapshot.val();
             const textEl = document.getElementById('relay-status-text');
@@ -543,7 +765,6 @@
         });
     }
 
-    // === ระบบ Bluetooth Gateway ===
     window.connectBluetooth = async function() {
         const indicator = document.getElementById('mode-indicator');
         try {
