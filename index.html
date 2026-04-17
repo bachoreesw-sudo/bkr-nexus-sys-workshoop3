@@ -11,13 +11,17 @@
     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1"></script>
     
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
     
     <style>
+        /* ================= CSS โครงสร้างเดิมทั้งหมด ================= */
         :root {
             --bg-color: #0b0f19;
             --card-bg: rgba(20, 25, 35, 0.7);
@@ -45,32 +49,102 @@
             margin-bottom: 20px;
         }
 
-        .ph-circle-container { display: flex; justify-content: center; align-items: center; margin: 20px 0; }
+        .ph-circle-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+
         .ph-circle {
-            width: 200px; height: 200px; border-radius: 50%;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             border: 5px solid var(--neon-green);
             box-shadow: 0 0 30px var(--neon-green), inset 0 0 20px var(--neon-green);
             transition: all 0.5s ease;
         }
-        .ph-value { font-family: 'Orbitron', sans-serif; font-size: 3.5rem; font-weight: 700; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
-        .ph-label { font-size: 1rem; color: #aaa; text-transform: uppercase; letter-spacing: 2px; }
 
-        .trash-card { border-left: 5px solid var(--neon-green); transition: 0.3s; }
+        .ph-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
 
-        .btn-cyber { background: transparent; color: var(--neon-blue); border: 1px solid var(--neon-blue); font-family: 'Orbitron', sans-serif; transition: 0.3s; }
-        .btn-cyber:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 20px var(--neon-blue); }
+        .ph-label {
+            font-size: 1rem;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .trash-card {
+            border-left: 5px solid var(--neon-green);
+            transition: 0.3s;
+        }
+
+        .btn-cyber {
+            background: transparent;
+            color: var(--neon-blue);
+            border: 1px solid var(--neon-blue);
+            font-family: 'Orbitron', sans-serif;
+            transition: 0.3s;
+        }
+
+        .btn-cyber:hover {
+            background: var(--neon-blue);
+            color: #000;
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
         
-        .btn-action-on { background: rgba(0,255,102,0.1); border: 1px solid var(--neon-green); color: var(--neon-green); }
-        .btn-action-on:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 20px var(--neon-green); }
-        .btn-action-off { background: rgba(255,0,60,0.1); border: 1px solid var(--neon-red); color: var(--neon-red); }
-        .btn-action-off:hover { background: var(--neon-red); color: #fff; box-shadow: 0 0 20px var(--neon-red); }
+        .btn-action-on {
+            background: rgba(0,255,102,0.1);
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+        }
 
-        .page-section { display: none; animation: fadeIn 0.4s; }
-        .page-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .btn-action-on:hover {
+            background: var(--neon-green);
+            color: #000;
+            box-shadow: 0 0 20px var(--neon-green);
+        }
 
-        .form-control, .form-control:focus { background: rgba(0,0,0,0.5); border: 1px solid #333; color: #fff; }
+        .btn-action-off {
+            background: rgba(255,0,60,0.1);
+            border: 1px solid var(--neon-red);
+            color: var(--neon-red);
+        }
+
+        .btn-action-off:hover {
+            background: var(--neon-red);
+            color: #fff;
+            box-shadow: 0 0 20px var(--neon-red);
+        }
+
+        .page-section {
+            display: none;
+            animation: fadeIn 0.4s;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-control, .form-control:focus {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #333;
+            color: #fff;
+        }
 
         .team-banner {
             border-radius: 15px;
@@ -80,16 +154,29 @@
             transition: 0.3s;
             position: relative;
         }
+
         .team-banner:hover {
             box-shadow: 0 0 20px var(--neon-blue);
             transform: scale(1.02);
         }
+
         .team-banner-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;
-            opacity: 0; transition: 0.3s;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: 0.3s;
         }
-        .team-banner:hover .team-banner-overlay { opacity: 1; }
+
+        .team-banner:hover .team-banner-overlay {
+            opacity: 1;
+        }
         
         .member-card {
             cursor: pointer;
@@ -97,29 +184,31 @@
             border-radius: 15px;
             padding: 10px;
         }
+
         .member-card:hover {
             background: rgba(0, 243, 255, 0.1);
             transform: translateY(-5px);
         }
         
-        /* ✅ โซนบังคับรูปโปรไฟล์ให้เป็นวงกลม (ใช้เทคนิค Wrapper ชัวร์ 100%) */
         .img-wrapper {
             width: 120px;
             height: 120px;
             margin: 0 auto 10px auto;
-            border-radius: 50% !important; /* บังคับกรอบให้กลม */
+            border-radius: 50% !important;
             border: 3px solid var(--neon-green);
             box-shadow: 0 0 15px rgba(0, 255, 102, 0.3);
-            overflow: hidden !important; /* ✅ ตัดส่วนที่ล้นกรอบทิ้งทั้งหมด */
+            overflow: hidden !important;
             transition: 0.3s;
             background-color: #1a233a;
         }
+
         .img-wrapper img {
             width: 100%;
             height: 100%;
-            object-fit: cover !important; /* บังคับรูปไม่ให้เบี้ยว */
+            object-fit: cover !important;
             display: block;
         }
+
         .member-card:hover .img-wrapper {
             border-color: var(--neon-blue);
             box-shadow: 0 0 20px rgba(0, 243, 255, 0.6);
@@ -132,31 +221,117 @@
             box-shadow: 0 0 30px rgba(0, 243, 255, 0.2);
         }
 
-        /* CSS สำหรับหนังสือคู่มือเปิด */
         .manual-banner {
             background: linear-gradient(90deg, rgba(0,243,255,0.1) 0%, rgba(0,0,0,0) 100%);
             border-left: 5px solid var(--neon-blue);
             cursor: pointer;
             transition: 0.3s;
         }
-        .manual-banner:hover { background: rgba(0,243,255,0.2); transform: translateX(5px); }
+
+        .manual-banner:hover {
+            background: rgba(0,243,255,0.2);
+            transform: translateX(5px);
+        }
         
         @media (min-width: 768px) {
-            .book-page-left { border-right: 1px dashed rgba(0, 243, 255, 0.3); padding-right: 25px; }
-            .book-page-right { padding-left: 25px; }
+            .book-page-left {
+                border-right: 1px dashed rgba(0, 243, 255, 0.3);
+                padding-right: 25px;
+            }
+            .book-page-right {
+                padding-left: 25px;
+            }
         }
-        .manual-topic { color: var(--neon-blue); font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid rgba(0,243,255,0.2); padding-bottom: 5px; }
-        .manual-list { padding-left: 20px; }
-        .manual-list li { margin-bottom: 10px; font-size: 0.95rem; color: #ccc; line-height: 1.5; }
-        .manual-list li strong { color: #fff; }
+
+        .manual-topic {
+            color: var(--neon-blue);
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(0,243,255,0.2);
+            padding-bottom: 5px;
+        }
+
+        .manual-list {
+            padding-left: 20px;
+        }
+
+        .manual-list li {
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            color: #ccc;
+            line-height: 1.5;
+        }
+
+        .manual-list li strong {
+            color: #fff;
+        }
+
+        /* ================= CSS ส่วนแผนที่ 3D, AI และนาฬิกา ================= */
+        #three-container {
+            width: 100%;
+            height: 280px;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(0,243,255,0.3);
+        }
+
+        .sim-btn {
+            position: absolute;
+            top: 10px;
+            z-index: 10;
+            background: rgba(11,15,25,0.8);
+            color: white;
+            border: 1px solid var(--neon-blue);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            transition: 0.2s;
+        }
+        
+        #weatherBtn { left: 10px; pointer-events: none; } /* เปลี่ยนเป็นป้ายแสดงผลอย่างเดียว */
+        #shadeBtn { left: 150px; cursor: pointer; opacity: 0.9; }
+        #shadeBtn:hover { background: rgba(0, 243, 255, 0.2); }
+
+        #map {
+            width: 100%;
+            height: 280px;
+            border-radius: 15px;
+            border: 1px solid rgba(0,255,102,0.3);
+            z-index: 1;
+        }
+
+        .ai-alert {
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(0,243,255,0.05);
+            border-left: 4px solid var(--neon-blue);
+        }
+
+        .digital-clock {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            color: var(--neon-blue);
+            text-shadow: 0 0 5px var(--neon-blue);
+            background: rgba(0, 243, 255, 0.05);
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 243, 255, 0.2);
+        }
     </style>
 </head>
 <body>
 
 <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3">
-        <h2 style="font-family: 'Orbitron', sans-serif; text-shadow: 0 0 10px var(--neon-blue);"><i class="fa-solid fa-satellite-dish text-info"></i> BKR NEXUS SYS</h2>
-        <div class="d-flex align-items-center gap-2">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3 gap-3">
+        <h2 style="font-family: 'Orbitron', sans-serif; text-shadow: 0 0 10px var(--neon-blue); margin: 0;">
+            <i class="fa-solid fa-satellite-dish text-info"></i> BKR NEXUS SYS
+        </h2>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <div id="realtime-clock" class="digital-clock">
+                <i class="fa-regular fa-clock"></i> 00:00:00
+            </div>
+            
             <div id="mode-indicator" class="badge border border-success text-success" style="background: rgba(0,255,102,0.1); font-family: 'Orbitron', sans-serif; padding: 8px 12px; letter-spacing: 1px;">
                 <i class="fa-solid fa-wifi"></i> CLOUD MODE
             </div>
@@ -167,6 +342,7 @@
     </div>
 
     <div id="page-home" class="page-section active">
+        
         <div class="row">
             <div class="col-md-5">
                 <div class="glass-card text-center h-100">
@@ -218,6 +394,59 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div class="row mt-2 g-3">
+            <div class="col-lg-4 col-md-12">
+                <div class="glass-card h-100 mb-0">
+                    <h5 class="text-secondary mb-2"><i class="fa-solid fa-brain"></i> AI สมองกล & ภัยพิบัติ</h5>
+                    <div id="ai-alert-box" class="ai-alert mb-2">
+                        <h6 class="text-warning fw-bold mb-1" id="ai-title"><i class="fa-solid fa-spinner fa-spin"></i> กำลังวิเคราะห์...</h6>
+                        <small class="text-light" id="ai-desc">รอข้อมูลระบบ</small>
+                    </div>
+                    
+                    <div id="disaster-alert-box" class="p-2 border rounded mt-2" style="background: rgba(0,0,0,0.4); border-color: #333 !important; display: none;">
+                        <h6 id="disaster-title" class="fw-bold mb-1" style="font-size: 0.9rem;">⚠️ วิเคราะห์ความเสี่ยงพื้นที่</h6>
+                        <small id="disaster-desc" class="text-light" style="font-size: 0.8rem;">สถานการณ์ปกติ</small>
+                    </div>
+
+                    <hr class="border-secondary my-2">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <small class="text-muted">โซลาร์ชาร์จ <span id="shade-status" class="text-info" style="font-size: 0.7rem;"></span>:</small> 
+                        <strong id="solar-watt" class="text-warning">0 W</strong>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <small class="text-muted">โหลดมอเตอร์:</small> 
+                        <strong id="pump-watt" class="text-danger">2 W</strong>
+                    </div>
+                    <div class="p-2 mt-2 border rounded border-info text-center" style="background: rgba(0,243,255,0.05);">
+                        <small class="text-info d-block">แบตเตอรี่ทำงานได้อีก (12V 9A)</small>
+                        <h5 id="batt-time" class="text-white mb-0 mt-1">กำลังประเมิน...</h5>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="glass-card h-100 mb-0 p-2">
+                    <div class="d-flex justify-content-between align-items-center mb-2 px-2">
+                        <h6 class="text-secondary mb-0"><i class="fa-solid fa-cube"></i> 3D ถังขยะ (น้ำไหล 2D)</h6>
+                    </div>
+                    <div id="three-container">
+                        <div id="weatherBtn" class="sim-btn">🌤️ กำลังดึงสภาพอากาศ...</div>
+                        <button id="shadeBtn" class="sim-btn" title="จำลองการวางในที่ร่ม">🌳 ที่ร่ม: ปิด</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="glass-card h-100 mb-0 p-2">
+                    <div class="d-flex justify-content-between align-items-center mb-2 px-2">
+                        <h6 class="text-secondary mb-0"><i class="fa-solid fa-map-location-dot"></i> จุดเฝ้าระวัง (สถานะสี)</h6>
+                    </div>
+                    <div id="map"></div>
+                </div>
+            </div>
+            
         </div>
 
         <div class="glass-card manual-banner mt-4 text-start p-3" data-bs-toggle="modal" data-bs-target="#manualModal">
@@ -283,12 +512,10 @@
         <button class="btn btn-outline-secondary mb-3" onclick="navTo('page-home')"><i class="fa-solid fa-arrow-left"></i> กลับหน้าหลัก</button>
         <div class="glass-card">
             <h5 class="text-secondary mb-3"><i class="fa-regular fa-calendar-days"></i> ดูสรุปข้อมูลและกราฟรายวัน</h5>
-            
             <div class="input-group mb-4" style="max-width: 300px;">
                 <input type="date" id="history-date" class="form-control">
                 <button class="btn btn-outline-info" onclick="loadSpecificHistory()">ดึงข้อมูล</button>
             </div>
-
             <div class="row text-center mb-4" id="history-summary-box" style="display: none;">
                 <div class="col-md-4 mb-2">
                     <div class="p-3 border rounded h-100" style="background: rgba(0, 243, 255, 0.05); border-color: var(--neon-blue) !important;">
@@ -314,15 +541,12 @@
                     </div>
                 </div>
             </div>
-
             <div id="history-empty-msg" class="text-center text-muted py-4">
                 <i class="fa-solid fa-folder-open fs-1 mb-2 opacity-50"></i><br>เลือกวันที่เพื่อดูข้อมูล
             </div>
-
             <div id="history-chart-container" style="height: 350px; display: none;">
                 <canvas id="historyChart"></canvas>
             </div>
-
         </div>
     </div>
 </div>
@@ -389,7 +613,6 @@
             </div>
             <div class="modal-body py-4">
                 <div class="row text-center g-4">
-                    
                     <div class="col-6 col-md-3 member-card" data-bs-target="#memberDetailModal" data-bs-toggle="modal" 
                          onclick="updateMemberDetail('https://github.com/bachoreesw-sudo/bkr-nexus-sys-workshoop-/blob/main/555.jpg?raw=true', 'นายบาฆอรี เจ๊ะหะ', 'ที่ปรึกษาเขียนโปรแกรม', 'ประวัติคร่าวๆ : เหรียญทองการแข่งขันหุ่นยนต์เยาว์ชน INNOVEDEXระดับประเทศ ชนะการแข่งขันโครงงาน ม.ราชฎัชยะลา ชนะการแข่งขันPLC มนร. ')">
                         <div class="img-wrapper">
@@ -409,11 +632,11 @@
                     </div>
 
                     <div class="col-6 col-md-3 member-card" data-bs-target="#memberDetailModal" data-bs-toggle="modal" 
-                         onclick="updateMemberDetail('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80', 'นาย ซี นามสมมุติ', 'จัดทำรูปเล่มโครงงาน', 'ประวัติคร่าวๆ: รับหน้าที่ในการรวบรวมข้อมูล วิเคราะห์ผล และเรียบเรียงเนื้อหาโครงงานทั้งหมดออกมาเป็นรูปเล่มที่สมบูรณ์และถูกต้องตามหลักวิชาการ')">
+                         onclick="updateMemberDetail('https://github.com/bachoreesw-sudo/bkr-nexus-sys-workshoop-/blob/main/P7..jpg?raw=true', 'นางสาวอัสนา สมาแอ', 'จัดทำรูปเล่มโครงงาน', 'ประวัติคร่าวๆ: รับหน้าที่ในการรวบรวมข้อมูล วิเคราะห์ผล และเรียบเรียงเนื้อหาโครงงานทั้งหมดออกมาเป็นรูปเล่มที่สมบูรณ์และถูกต้องตามหลักวิชาการ')">
                         <div class="img-wrapper">
-                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80" alt="Member 3">
+                            <img src="https://github.com/bachoreesw-sudo/bkr-nexus-sys-workshoop-/blob/main/P7..jpg?raw=true">
                         </div>
-                        <h6 class="text-white fw-bold mt-2 mb-1">นาย ซี นามสมมุติ</h6>
+                        <h6 class="text-white fw-bold mt-2 mb-1">นางสาวอัสนา สมาแอ</h6>
                         <small class="text-info">คลิกเพื่อดูประวัติ</small>
                     </div>
 
@@ -425,7 +648,6 @@
                         <h6 class="text-white fw-bold mt-2 mb-1">นางสาว ดี นามสมมุติ</h6>
                         <small class="text-info">คลิกเพื่อดูประวัติ</small>
                     </div>
-
                 </div>
             </div>
             <div class="modal-footer border-secondary justify-content-center">
@@ -445,11 +667,9 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body py-4">
-                
                 <div class="img-wrapper mx-auto" style="width: 180px; height: 180px; border-color: var(--neon-blue);">
                     <img id="detail-img" src="" alt="Profile Detail">
                 </div>
-                
                 <h3 id="detail-name" class="text-white fw-bold mt-3 mb-1" style="text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);">Name</h3>
                 <h5 id="detail-role" class="text-info mb-4" style="letter-spacing: 1px;">Role</h5>
                 <div class="glass-card text-start p-3 m-0" style="background: rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.2);">
@@ -462,6 +682,20 @@
 </div>
 
 <script>
+    // ==============================================
+    // [ใหม่] ระบบนาฬิกา Real-time อัตโนมัติ
+    // ==============================================
+    function updateClock() {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('th-TH', { hour12: false });
+        document.getElementById('realtime-clock').innerHTML = `<i class="fa-regular fa-clock"></i> ${timeStr}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // ==============================================
+    // สคริปต์ UI เดิมของออริจินัล
+    // ==============================================
     function navTo(pageId) {
         document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
         document.getElementById(pageId).classList.add('active');
@@ -485,9 +719,13 @@
         const container = document.getElementById('schedule-container');
         const slotHtml = `
             <div class="row g-2 mb-2 align-items-center schedule-row" id="slot-${scheduleCount}">
-                <div class="col-5"><input type="time" class="form-control start-time" value="${start}"></div>
+                <div class="col-5">
+                    <input type="time" class="form-control start-time" value="${start}">
+                </div>
                 <div class="col-1 text-center">ถึง</div>
-                <div class="col-5"><input type="time" class="form-control end-time" value="${end}"></div>
+                <div class="col-5">
+                    <input type="time" class="form-control end-time" value="${end}">
+                </div>
                 <div class="col-1 text-end">
                     <button class="btn btn-outline-danger btn-sm" onclick="document.getElementById('slot-${scheduleCount}').remove()">X</button>
                 </div>
@@ -498,8 +736,11 @@
 </script>
 
 <script type="module">
+    // ==============================================
+    // Firebase & System Logic ของเดิม + อัปเดต API / AI
+    // ==============================================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set, update, get } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
+    import { getDatabase, ref, onValue, set, update, get, remove } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBDq_9EK3HAcgeecJEbpR5HVqzkuWhfmDk",
@@ -517,8 +758,395 @@
 
     let bleRelayChar = null;
     let historyChartInstance = null; 
+    
+    // ตัวแปรเก็บสถานะเพื่อส่งให้ AI วิเคราะห์
+    let currentPh = 7.0;
+    let currentDist = 30;
+    let isPumpOn = false;
 
+    // [ใหม่] ตัวแปรสำหรับ API, AI Delta pH และปุ่มที่ร่ม
+    let isRaining = false;
+    let isInShade = false;
+    let phBuffer = [];
+    const DELTA_TIME_WINDOW = 10 * 60 * 1000; // หน้าต่างเวลา 10 นาทีสำหรับเทียบ pH
+    const weatherApiKey = "74427e291c90f010fe89ba9327c16912";
+
+    // ==========================================
+    // [ใหม่] ฟังก์ชันดึงสภาพอากาศ อ.เมือง นราธิวาส
+    // ==========================================
+    function fetchNarathiwatWeather() {
+        const lat = 6.425;
+        const lon = 101.825;
+        const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&units=metric&lang=th`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const weatherMain = data.weather[0].main;
+                const temp = data.main.temp;
+                
+                if (weatherMain === "Rain" || weatherMain === "Drizzle" || weatherMain === "Thunderstorm") {
+                    isRaining = true;
+                    document.getElementById('weatherBtn').innerText = `🌧️ นราธิวาส: ฝนตก (${temp}°C)`;
+                } else {
+                    isRaining = false;
+                    document.getElementById('weatherBtn').innerText = `🌤️ นราธิวาส: ปกติ (${temp}°C)`;
+                }
+                if(window.runAIAndPowerLogic) window.runAIAndPowerLogic();
+            })
+            .catch(error => console.error("API Weather Error:", error));
+    }
+
+    // ==========================================
+    // 🧊 3D SCENE 
+    // ==========================================
+    let is3DInit = false;
+    let scene, camera, renderer, ambientLight, sunLight, waterMat, flowLines;
+    let rainSystem;
+    let lidGroup, wasteGroup, itemsList = [];
+    const totalItems = 200;
+
+    function initThreeJS() {
+        if(is3DInit) return;
+        is3DInit = true;
+
+        const container = document.getElementById('three-container');
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0b0f19);
+        
+        camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(0, 1.5, 6); 
+        camera.lookAt(0, 0.5, 0);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        container.appendChild(renderer.domElement);
+
+        ambientLight = new THREE.AmbientLight(0xffffff, 0.8); 
+        scene.add(ambientLight);
+        
+        sunLight = new THREE.DirectionalLight(0xffffee, 1.2); 
+        sunLight.position.set(5, 10, 5); 
+        scene.add(sunLight);
+
+        // 1. ถังขยะแนวตั้ง 3D
+        const binGeo = new THREE.BoxGeometry(1.6, 3.2, 1.6);
+        const binMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, transmission: 0.85, opacity: 1, transparent: true, roughness: 0.1, side: THREE.DoubleSide });
+        const bin = new THREE.Mesh(binGeo, binMat); 
+        bin.position.y = 1.0; 
+        scene.add(bin);
+        bin.add(new THREE.LineSegments(new THREE.EdgesGeometry(binGeo), new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.3, transparent: true })));
+
+        // ฝาถัง
+        lidGroup = new THREE.Group();
+        const lid = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.1, 1.65), new THREE.MeshStandardMaterial({ color: 0x334155 }));
+        lidGroup.position.set(0, 2.65, -0.8); 
+        lid.position.set(0, 0, 0.8); 
+        lidGroup.add(lid);
+        lidGroup.rotation.x = -Math.PI / 4; 
+        scene.add(lidGroup);
+
+        // ขยะข้างใน
+        wasteGroup = new THREE.Group(); 
+        wasteGroup.position.y = -0.5; 
+        scene.add(wasteGroup);
+        const materials = [
+            new THREE.MeshPhysicalMaterial({ color: 0x3b82f6, transmission: 0.5, transparent: true }), 
+            new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 }), 
+            new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.9 })
+        ];
+        for(let i=0; i<totalItems; i++) {
+            const mat = materials[Math.floor(Math.random() * materials.length)];
+            const type = Math.floor(Math.random() * 3);
+            let mesh;
+            if(type === 0) mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.3), mat);
+            else if(type === 1) mesh = new THREE.Mesh(new THREE.IcosahedronGeometry(0.12, 1), mat);
+            else mesh = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.15, 0.2), mat);
+            
+            mesh.position.set((Math.random() - 0.5) * 1.3, (i / totalItems) * 2.8, (Math.random() - 0.5) * 1.3);
+            mesh.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI);
+            mesh.visible = false; 
+            wasteGroup.add(mesh); 
+            itemsList.push(mesh);
+        }
+
+        // 2. ผิวน้ำ 2D สีฟ้า
+        const waterGeo = new THREE.PlaneGeometry(20, 20);
+        waterMat = new THREE.MeshBasicMaterial({ color: 0x00aaff, transparent: true, opacity: 0.6, side: THREE.DoubleSide });
+        const water = new THREE.Mesh(waterGeo, waterMat);
+        water.rotation.x = -Math.PI / 2;
+        water.position.y = -0.2;
+        scene.add(water);
+
+        // 3. เอฟเฟกต์น้ำไหล
+        flowLines = new THREE.Group();
+        flowLines.position.y = -0.19; 
+        scene.add(flowLines);
+        for(let i=0; i<40; i++) {
+            const lineGeo = new THREE.PlaneGeometry(Math.random()*1.5 + 0.5, 0.04);
+            const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.4 });
+            const line = new THREE.Mesh(lineGeo, lineMat);
+            line.rotation.x = -Math.PI / 2;
+            line.position.set((Math.random() - 0.5) * 15, 0, (Math.random() - 0.5) * 5);
+            line.userData = { speed: Math.random() * 0.04 + 0.02 };
+            flowLines.add(line);
+        }
+
+        // ระบบฝน
+        const rainCount = 1000; 
+        const rainGeo = new THREE.BufferGeometry(); 
+        const rainPos = new Float32Array(rainCount * 3); 
+        const rainVel = [];
+        for(let i=0; i<rainCount; i++) {
+            rainPos[i*3] = (Math.random() - 0.5) * 15; 
+            rainPos[i*3+1] = Math.random() * 10; 
+            rainPos[i*3+2] = (Math.random() - 0.5) * 2; 
+            rainVel.push(0.1 + Math.random() * 0.15); 
+        }
+        rainGeo.setAttribute('position', new THREE.BufferAttribute(rainPos, 3));
+        rainSystem = new THREE.Points(rainGeo, new THREE.PointsMaterial({ color: 0xaaaaaa, size: 0.05, transparent: true, opacity: 0.6 }));
+        rainSystem.visible = false; 
+        scene.add(rainSystem);
+
+        function animate() {
+            requestAnimationFrame(animate); 
+            flowLines.children.forEach(line => {
+                line.position.x -= line.userData.speed;
+                if(line.position.x < -8) line.position.x = 8; 
+            });
+
+            if(rainSystem.visible) {
+                const rainP = rainGeo.attributes.position.array;
+                for(let i=0; i<rainCount; i++) {
+                    rainP[i*3+1] -= rainVel[i];
+                    if(rainP[i*3+1] < -2) rainP[i*3+1] = 10;
+                }
+                rainGeo.attributes.position.needsUpdate = true;
+            }
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // [ใหม่] ปุ่มจำลองที่ร่ม
+        document.getElementById('shadeBtn').addEventListener('click', (e) => {
+            isInShade = !isInShade;
+            if(isInShade) {
+                e.target.innerText = "🌳 ที่ร่ม: เปิด";
+                e.target.style.background = "rgba(0, 255, 102, 0.3)";
+                e.target.style.borderColor = "var(--neon-green)";
+            } else {
+                e.target.innerText = "🌳 ที่ร่ม: ปิด";
+                e.target.style.background = "rgba(11,15,25,0.8)";
+                e.target.style.borderColor = "var(--neon-blue)";
+            }
+            window.runAIAndPowerLogic();
+        });
+    }
+
+    // ==========================================
+    // 🗺️ แผนที่ดาวเทียม & ระบบสีสถานะ (Leaflet)
+    // ==========================================
+    let map;
+    let markers = {};
+    let currentMapStatusColor = '#00aaff';
+
+    function updateMapMarkersColor(hexColor) {
+        currentMapStatusColor = hexColor;
+        for(let id in markers) {
+            const customIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: `<div style="background-color:${hexColor}; width:16px; height:16px; border-radius:50%; border:2px solid #fff; box-shadow: 0 0 10px ${hexColor};"></div>`,
+                iconSize: [16, 16],
+                iconAnchor: [8, 8]
+            });
+            markers[id].setIcon(customIcon);
+        }
+    }
+
+    function initMap() {
+        if(map) { map.invalidateSize(); return; }
+        
+        map = L.map('map').setView([6.425, 101.825], 13); // พิกัดนราธิวาส
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri'
+        }).addTo(map);
+
+        onValue(ref(db, 'map_locations'), (snapshot) => {
+            for(let id in markers) map.removeLayer(markers[id]);
+            markers = {};
+            
+            if(snapshot.exists()) {
+                const data = snapshot.val();
+                for(let id in data) {
+                    const customIcon = L.divIcon({
+                        className: 'custom-div-icon',
+                        html: `<div style="background-color:${currentMapStatusColor}; width:16px; height:16px; border-radius:50%; border:2px solid #fff; box-shadow: 0 0 10px ${currentMapStatusColor};"></div>`,
+                        iconSize: [16, 16], 
+                        iconAnchor: [8, 8]
+                    });
+
+                    let marker = L.marker([data[id].lat, data[id].lng], {icon: customIcon}).addTo(map)
+                        .bindPopup(`<b>จุดที่: ${id.split('_')[1]}</b><br><button class="btn btn-sm btn-danger mt-1" onclick="window.removeMapPoint('${id}')">ลบจุดนี้</button>`);
+                    markers[id] = marker;
+                }
+            }
+        });
+
+        map.on('click', function(e) {
+            if(confirm("เพิ่มจุดเฝ้าระวังตรงนี้?")) {
+                const newId = 'loc_' + new Date().getTime();
+                set(ref(db, 'map_locations/' + newId), { lat: e.latlng.lat, lng: e.latlng.lng });
+            }
+        });
+    }
+
+    window.removeMapPoint = function(id) {
+        if(confirm("ลบจุดนี้?")) remove(ref(db, 'map_locations/' + id));
+    };
+
+    // ==========================================
+    // 🧠 AI วิเคราะห์ระบบ 3 ชั้น (Delta pH + Weather API)
+    // ==========================================
+    window.runAIAndPowerLogic = function() {
+        const hour = new Date().getHours();
+        const now = Date.now();
+        let solarPower = 0;
+        
+        // 1. ระบบหน่วยความจำระยะสั้น (Short-term Memory Buffer) คำนวณ Delta pH
+        phBuffer.push({ time: now, ph: currentPh });
+        // คัดกรองเก็บเฉพาะข้อมูลที่อยู่ในช่วง 10 นาที (600000 ms)
+        phBuffer = phBuffer.filter(item => now - item.time <= DELTA_TIME_WINDOW);
+        
+        let oldestPh = phBuffer[0].ph;
+        let deltaPh = Math.abs(currentPh - oldestPh);
+
+        // 2. คำนวณพลังงานอิงจากเวลาจริง + API ฝน + ปุ่มที่ร่ม
+        if (hour >= 6 && hour <= 18) {
+            solarPower = isRaining ? 15 : 50; 
+        }
+        if (isInShade) {
+            solarPower = 0; 
+            document.getElementById('shade-status').innerText = "(ติดร่มเงา)";
+        } else {
+            document.getElementById('shade-status').innerText = "";
+        }
+        
+        let systemLoad = isPumpOn ? 100 : 2; 
+
+        document.getElementById('solar-watt').innerText = solarPower + " W";
+        document.getElementById('pump-watt').innerText = systemLoad + " W";
+
+        let battWh = 108;
+        let netPower = solarPower - systemLoad; 
+        let battTimeMsg = "";
+
+        if (netPower >= 0) {
+            battTimeMsg = "ชาร์จไฟเข้า (ทำงานต่อเนื่อง)";
+            document.getElementById('batt-time').className = "text-success mb-0 mt-1 fw-bold";
+        } else {
+            let dischargeRate = Math.abs(netPower); 
+            let hoursLeft = battWh / dischargeRate; 
+            let hrs = Math.floor(hoursLeft);
+            let mins = Math.floor((hoursLeft - hrs) * 60);
+            battTimeMsg = `${hrs} ชม. ${mins} นาที`;
+            document.getElementById('batt-time').className = isPumpOn ? "text-danger mb-0 mt-1 fw-bold" : "text-warning mb-0 mt-1 fw-bold";
+        }
+        document.getElementById('batt-time').innerText = battTimeMsg;
+
+        // 3. AI วิเคราะห์ภัยพิบัติ (อิง API ฝนตก + Delta pH กะทันหัน)
+        let disasterBox = document.getElementById('disaster-alert-box');
+        let dTitle = document.getElementById('disaster-title');
+        let dDesc = document.getElementById('disaster-desc');
+        disasterBox.style.display = "block"; 
+        
+        if (isRaining && deltaPh >= 0.8) {
+            disasterBox.style.borderColor = "var(--neon-red) !important";
+            dTitle.innerHTML = `⚠️ อพยพด่วน! น้ำป่าไหลหลาก`;
+            dTitle.className = "text-danger fw-bold mb-1";
+            dDesc.innerHTML = `ค่า pH เปลี่ยนแปลงกะทันหัน <strong>(Delta: ${deltaPh.toFixed(2)})</strong> บ่งบอกถึงโคลนที่ไหลบ่ามากับน้ำฝน!`;
+        } else if (isRaining && currentPh < 6.5) {
+            disasterBox.style.borderColor = "var(--neon-yellow) !important";
+            dTitle.innerHTML = `🌧️ เฝ้าระวัง: น้ำฝนสะสม`;
+            dTitle.className = "text-warning fw-bold mb-1";
+            dDesc.innerText = "ฝนตกหนัก ค่า pH เริ่มเป็นกรดอ่อนๆ แต่ยังไม่มีการเปลี่ยนแปลงกะทันหัน";
+        } else if (isRaining && currentPh > 8.0) {
+            disasterBox.style.borderColor = "var(--neon-yellow) !important";
+            dTitle.innerHTML = `🌊 ระวัง! น้ำทะเลหนุน`;
+            dTitle.className = "text-warning fw-bold mb-1";
+            dDesc.innerText = "พบความเค็ม/ความเป็นด่างสูงผิดปกติขณะมีพายุ เสี่ยงน้ำทะลัก";
+        } else if (!isRaining && hour >= 10 && hour <= 16 && currentPh > 8.5) {
+            disasterBox.style.borderColor = "#ff8c00 !important"; 
+            dTitle.innerHTML = `🏜️ ระวัง! แหล่งน้ำแห้งขอด`;
+            dTitle.className = "fw-bold mb-1";
+            dTitle.style.color = "#ff8c00";
+            dDesc.innerText = "อุณหภูมิสูงและคุณภาพน้ำเข้มข้น เสี่ยงแหล่งน้ำทางการเกษตรเหือดแห้ง";
+        } else {
+            disasterBox.style.borderColor = "var(--neon-blue) !important";
+            dTitle.innerHTML = `✅ สภาพแวดล้อมปกติ`;
+            dTitle.className = "text-info fw-bold mb-1";
+            dDesc.innerHTML = `ไม่มีความเสี่ยงภัยพิบัติทางน้ำ <em>(Delta pH: ${deltaPh.toFixed(2)})</em>`;
+        }
+
+        // 4. สั่งเปลี่ยนสีสถานะระบบหลัก
+        let statusHex = '#00aaff'; 
+        if (currentDist < 10) statusHex = '#ffdd00'; 
+        if (currentPh < 6.0 || currentPh > 8.0 || deltaPh >= 0.8) statusHex = '#ff003c'; 
+        
+        if(is3DInit) {
+            waterMat.color.setHex(statusHex.replace('#', '0x'));
+            let fillPercent = Math.max(0, Math.min(100, ((30 - currentDist) / 25) * 100)); 
+            let itemsToShow = Math.floor((fillPercent / 100) * totalItems);
+            itemsList.forEach((mesh, index) => { mesh.visible = index < itemsToShow; });
+            
+            // ปรับเอฟเฟกต์แสงและฝนใน 3D อัตโนมัติจาก API
+            if (isRaining) {
+                ambientLight.intensity = 0.3; 
+                sunLight.intensity = 0.1; 
+                rainSystem.visible = true;
+            } else {
+                ambientLight.intensity = 0.8; 
+                sunLight.intensity = 1.2; 
+                rainSystem.visible = false;
+            }
+        }
+        updateMapMarkersColor(statusHex);
+
+        let aiTitle = document.getElementById('ai-title');
+        let aiDesc = document.getElementById('ai-desc');
+        let alertBox = document.getElementById('ai-alert-box');
+
+        if (statusHex === '#ff003c') {
+            alertBox.style.borderLeftColor = "var(--neon-red)";
+            aiTitle.innerHTML = `<i class="fa-solid fa-biohazard"></i> 🔴 ระบบแจ้งเหตุวิกฤต`;
+            aiDesc.innerText = `ตรวจพบความผิดปกติรุนแรงของแหล่งน้ำ`;
+            aiTitle.className = "text-danger fw-bold mb-1";
+        } else if (statusHex === '#ffdd00') {
+            alertBox.style.borderLeftColor = "var(--neon-yellow)";
+            aiTitle.innerHTML = `<i class="fa-solid fa-trash"></i> 🟡 ขยะล้นถัง`;
+            aiDesc.innerText = `ปริมาณขยะหนาแน่น รอเก็บกู้`;
+            aiTitle.className = "text-warning fw-bold mb-1";
+        } else {
+            alertBox.style.borderLeftColor = "var(--neon-blue)";
+            aiTitle.innerHTML = `<i class="fa-solid fa-check-circle" style="color: #00aaff;"></i> <span style="color: #00aaff;">ปลอดภัย</span>`;
+            aiDesc.innerText = `ระบบทำงานปกติ`;
+            aiTitle.className = "fw-bold mb-1";
+        }
+    };
+    
+    // เรียกใช้งาน API, Map และ 3D
+    setTimeout(() => {
+        initThreeJS();
+        initMap();
+        fetchNarathiwatWeather(); // ดึง API สภาพอากาศ
+        setInterval(fetchNarathiwatWeather, 15 * 60 * 1000); // ดึงซ้ำทุก 15 นาที
+        setInterval(window.runAIAndPowerLogic, 10000); 
+    }, 1000);
+
+    // ==========================================
+    // INITIALIZATION & FIREBASE 
+    // ==========================================
     if (db) {
+        // กราฟหน้าแรก
         const d = new Date();
         const todayStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
         
@@ -578,7 +1206,9 @@
             
             onValue(ref(db, 'sensor/ph'), (snap) => {
                 const val = snap.val() || 0;
+                currentPh = val; 
                 document.getElementById('ph-display').innerText = val.toFixed(2);
+                
                 const circle = document.getElementById('ph-circle-ui');
                 let color = 'var(--neon-green)';
                 if (val < 6.5) color = 'var(--neon-yellow)';
@@ -598,11 +1228,14 @@
                     todayChart.data.datasets[0].data.push({ x: Date.now(), y: val });
                     todayChart.update('quiet');
                 }
+                if(window.runAIAndPowerLogic) window.runAIAndPowerLogic();
             });
         });
 
         onValue(ref(db, 'sensor/distance'), (snapshot) => {
             const dist = snapshot.val() || 0;
+            currentDist = dist; 
+            
             const iconUI = document.getElementById('trash-icon-ui');
             const statusUI = document.getElementById('trash-current-status');
             const cardUI = document.getElementById('trash-card-ui');
@@ -627,6 +1260,7 @@
                 cardUI.style.borderLeftColor = "var(--neon-green)";
                 cardUI.style.background = "rgba(0, 255, 102, 0.05)";
             }
+            if(window.runAIAndPowerLogic) window.runAIAndPowerLogic();
         });
 
         document.getElementById('history-date').value = todayStr;
@@ -724,9 +1358,11 @@
 
         onValue(ref(db, 'control/relay'), (snapshot) => {
             const status = snapshot.val();
+            isPumpOn = status; 
             const textEl = document.getElementById('relay-status-text');
             textEl.innerText = status ? "ON" : "OFF";
             textEl.className = status ? "text-success fw-bold text-shadow-glow" : "text-danger fw-bold";
+            if(window.runAIAndPowerLogic) window.runAIAndPowerLogic();
         });
 
         window.setRelay = async function(state) { 
@@ -765,6 +1401,7 @@
         });
     }
 
+    // Bluetooth
     window.connectBluetooth = async function() {
         const indicator = document.getElementById('mode-indicator');
         try {
