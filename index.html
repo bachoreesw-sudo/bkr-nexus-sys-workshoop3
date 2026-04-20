@@ -421,7 +421,7 @@
                     </div>
                     <div class="p-2 mt-2 border rounded border-info text-center" style="background: rgba(0,243,255,0.05);">
                         <small class="text-info d-block">แบตเตอรี่ (12V 9A)</small>
-                        <h5 id="batt-time" class="text-white mb-0 mt-1" style="font-size: 1.1rem;">รอข้อมูลจากบอร์ด...</h5>
+                        <h5 id="batt-time" class="text-white mb-0 mt-1" style="font-size: 1.1rem;">💤 รอข้อมูลใหม่จากบอร์ด...</h5>
                     </div>
                 </div>
             </div>
@@ -781,6 +781,11 @@
     let isBoardOnline = false;
     let lastBoardActivityTime = 0;
     
+    // [อัปเกรดล่าสุด] ตัวแปรคัดกรอง "ข้อมูลแคชก้อนแรก" จาก Firebase ตอนเปิดเว็บ
+    let isFirstPhLoad = true;
+    let isFirstDistLoad = true;
+    let isFirstVoltLoad = true;
+    
     // ตัวแปรจัดการแบตเตอรี่ Persistent State
     const MAX_BATT_WH = 108; // ความจุแบต 12V 9A = 108 Watt-hours
     let currentBattWh = MAX_BATT_WH;
@@ -1020,7 +1025,7 @@
     };
 
     // ==========================================
-    // [อัปเกรด] ฟังก์ชันเช็กสถานะการเชื่อมต่อบอร์ด
+    // ฟังก์ชันเช็กสถานะการเชื่อมต่อบอร์ด
     // ==========================================
     function checkBoardStatus() {
         const now = Date.now();
@@ -1098,9 +1103,9 @@
         let deltaMs = now - lastLogicTime;
         lastLogicTime = now;
         
-        checkBoardStatus(); // เช็กสถานะบอร์ดทุกครั้งที่รันลอจิก
+        checkBoardStatus(); // เช็กสถานะบอร์ด
 
-        // [อัปเกรด] อัปเดตแบตเตอรี่เฉพาะเมื่อบอร์ด "ออนไลน์" เท่านั้น
+        // อัปเดตแบตเตอรี่เฉพาะเมื่อบอร์ด "ออนไลน์จริงๆ" เท่านั้น
         if (isBoardOnline) {
             let deltaHours = deltaMs / 3600000; 
             currentBattWh += (netPower * deltaHours);
@@ -1133,10 +1138,9 @@
             document.getElementById('batt-time').innerText = `${battTimeMsg} (${percent}%)`;
 
         } else {
-            // ถ้าระบบยังไม่มีการเชื่อมต่อ ให้แสดงสถานะรอ
+            // ถ้าระบบยังไม่มีการเชื่อมต่อจริงๆ (บล็อกแคชแล้ว)
             document.getElementById('batt-time').className = "text-secondary mb-0 mt-1";
-            document.getElementById('batt-time').innerText = "รอข้อมูลจากบอร์ด...";
-            // ไม่หักลด currentBattWh ปล่อยแช่ไว้แบบนั้น
+            document.getElementById('batt-time').innerText = "💤 รอข้อมูลใหม่จากบอร์ด...";
         }
 
         // 3. AI วิเคราะห์ภัยพิบัติ
@@ -1245,9 +1249,12 @@
             if (snapshot.exists()) {
                 currentVoltage = snapshot.val();
                 
-                // ถ้ารับค่าได้ ถือว่าบอร์ดออนไลน์
-                isBoardOnline = true;
-                lastBoardActivityTime = Date.now();
+                // [อัปเกรดล่าสุด] กรองข้อมูลแคชก้อนแรกทิ้ง
+                if (!isFirstVoltLoad) {
+                    isBoardOnline = true;
+                    lastBoardActivityTime = Date.now();
+                }
+                isFirstVoltLoad = false;
                 
                 if(window.runAIAndPowerLogic) window.runAIAndPowerLogic();
             }
@@ -1310,14 +1317,17 @@
                 document.getElementById('today-min-ph').innerText = `Min: ${globalMin.toFixed(2)}`;
             }
             
-            // [อัปเกรด] ตัวรับค่า pH 
+            // ตัวรับค่า pH 
             onValue(ref(db, 'sensor/ph'), (snap) => {
                 const val = snap.val() || 0;
                 currentPh = val; 
                 
-                // ถ้ารับค่าได้ ถือว่าบอร์ดออนไลน์
-                isBoardOnline = true;
-                lastBoardActivityTime = Date.now();
+                // [อัปเกรดล่าสุด] กรองข้อมูลแคชก้อนแรกทิ้ง
+                if (!isFirstPhLoad) {
+                    isBoardOnline = true;
+                    lastBoardActivityTime = Date.now();
+                }
+                isFirstPhLoad = false;
                 
                 document.getElementById('ph-display').innerText = val.toFixed(2);
                 
@@ -1344,14 +1354,17 @@
             });
         });
 
-        // [อัปเกรด] ตัวรับค่า ระยะทาง 
+        // ตัวรับค่า ระยะทาง 
         onValue(ref(db, 'sensor/distance'), (snapshot) => {
             const dist = snapshot.val() || 0;
             currentDist = dist; 
             
-            // ถ้ารับค่าได้ ถือว่าบอร์ดออนไลน์
-            isBoardOnline = true;
-            lastBoardActivityTime = Date.now();
+            // [อัปเกรดล่าสุด] กรองข้อมูลแคชก้อนแรกทิ้ง
+            if (!isFirstDistLoad) {
+                isBoardOnline = true;
+                lastBoardActivityTime = Date.now();
+            }
+            isFirstDistLoad = false;
             
             const iconUI = document.getElementById('trash-icon-ui');
             const statusUI = document.getElementById('trash-current-status');
