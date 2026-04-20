@@ -289,7 +289,7 @@
             transition: 0.2s;
         }
         
-        #weatherBtn { left: 10px; pointer-events: none; } /* เปลี่ยนเป็นป้ายแสดงผลอย่างเดียว */
+        #weatherBtn { left: 10px; pointer-events: none; }
         #shadeBtn { left: 150px; cursor: pointer; opacity: 0.9; }
         #shadeBtn:hover { background: rgba(0, 243, 255, 0.2); }
 
@@ -420,8 +420,8 @@
                         <strong id="pump-watt" class="text-danger">2 W</strong>
                     </div>
                     <div class="p-2 mt-2 border rounded border-info text-center" style="background: rgba(0,243,255,0.05);">
-                        <small class="text-info d-block">แบตเตอรี่ทำงานได้อีก (12V 9A)</small>
-                        <h5 id="batt-time" class="text-white mb-0 mt-1">กำลังประเมิน...</h5>
+                        <small class="text-info d-block">แบตเตอรี่ (12V 9A)</small>
+                        <h5 id="batt-time" class="text-white mb-0 mt-1" style="font-size: 1.1rem;">รอข้อมูลจากบอร์ด...</h5>
                     </div>
                 </div>
             </div>
@@ -683,7 +683,7 @@
 
 <script>
     // ==============================================
-    // [ใหม่] ระบบนาฬิกา Real-time อัตโนมัติ
+    // ระบบนาฬิกา Real-time อัตโนมัติ
     // ==============================================
     function updateClock() {
         const now = new Date();
@@ -694,7 +694,7 @@
     updateClock();
 
     // ==============================================
-    // สคริปต์ UI เดิมของออริจินัล
+    // สคริปต์ UI เดิม
     // ==============================================
     function navTo(pageId) {
         document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
@@ -764,15 +764,30 @@
     let currentDist = 30;
     let isPumpOn = false;
 
-    // [ใหม่] ตัวแปรสำหรับ API, AI Delta pH และปุ่มที่ร่ม
+    // ตัวแปรสำหรับ API, AI Delta pH และปุ่มที่ร่ม
     let isRaining = false;
+    let weatherCondition = "clear";
     let isInShade = false;
     let phBuffer = [];
-    const DELTA_TIME_WINDOW = 10 * 60 * 1000; // หน้าต่างเวลา 10 นาทีสำหรับเทียบ pH
+    const DELTA_TIME_WINDOW = 10 * 60 * 1000; 
     const weatherApiKey = "74427e291c90f010fe89ba9327c16912";
 
+    // ตัวแปรจัดการ API เมฆ อุณหภูมิ และ Voltage
+    let cloudPercent = 0;
+    let currentTemp = 25;
+    let currentVoltage = null; 
+    
+    // [อัปเกรด] ตัวแปรตรวจสอบสถานะบอร์ด ESP32
+    let isBoardOnline = false;
+    let lastBoardActivityTime = 0;
+    
+    // ตัวแปรจัดการแบตเตอรี่ Persistent State
+    const MAX_BATT_WH = 108; // ความจุแบต 12V 9A = 108 Watt-hours
+    let currentBattWh = MAX_BATT_WH;
+    let lastLogicTime = Date.now();
+
     // ==========================================
-    // [ใหม่] ฟังก์ชันดึงสภาพอากาศ อ.เมือง นราธิวาส
+    // ฟังก์ชันดึงสภาพอากาศ อ.เมือง นราธิวาส
     // ==========================================
     function fetchNarathiwatWeather() {
         const lat = 6.425;
@@ -782,15 +797,22 @@
         fetch(url)
             .then(response => response.json())
             .then(data => {
+                cloudPercent = data.clouds.all; 
+                currentTemp = data.main.temp;
                 const weatherMain = data.weather[0].main;
-                const temp = data.main.temp;
                 
                 if (weatherMain === "Rain" || weatherMain === "Drizzle" || weatherMain === "Thunderstorm") {
                     isRaining = true;
-                    document.getElementById('weatherBtn').innerText = `🌧️ นราธิวาส: ฝนตก (${temp}°C)`;
+                    weatherCondition = "rain";
+                    document.getElementById('weatherBtn').innerText = `🌧️ นราธิวาส: ฝนตก เมฆ ${cloudPercent}% (${currentTemp}°C)`;
+                } else if (weatherMain === "Clouds") {
+                    isRaining = false;
+                    weatherCondition = "clouds";
+                    document.getElementById('weatherBtn').innerText = `⛅ นราธิวาส: เมฆ ${cloudPercent}% (${currentTemp}°C)`;
                 } else {
                     isRaining = false;
-                    document.getElementById('weatherBtn').innerText = `🌤️ นราธิวาส: ปกติ (${temp}°C)`;
+                    weatherCondition = "clear";
+                    document.getElementById('weatherBtn').innerText = `☀️ นราธิวาส: แดดจัด เมฆ ${cloudPercent}% (${currentTemp}°C)`;
                 }
                 if(window.runAIAndPowerLogic) window.runAIAndPowerLogic();
             })
@@ -829,7 +851,6 @@
         sunLight.position.set(5, 10, 5); 
         scene.add(sunLight);
 
-        // 1. ถังขยะแนวตั้ง 3D
         const binGeo = new THREE.BoxGeometry(1.6, 3.2, 1.6);
         const binMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, transmission: 0.85, opacity: 1, transparent: true, roughness: 0.1, side: THREE.DoubleSide });
         const bin = new THREE.Mesh(binGeo, binMat); 
@@ -837,7 +858,6 @@
         scene.add(bin);
         bin.add(new THREE.LineSegments(new THREE.EdgesGeometry(binGeo), new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.3, transparent: true })));
 
-        // ฝาถัง
         lidGroup = new THREE.Group();
         const lid = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.1, 1.65), new THREE.MeshStandardMaterial({ color: 0x334155 }));
         lidGroup.position.set(0, 2.65, -0.8); 
@@ -846,7 +866,6 @@
         lidGroup.rotation.x = -Math.PI / 4; 
         scene.add(lidGroup);
 
-        // ขยะข้างใน
         wasteGroup = new THREE.Group(); 
         wasteGroup.position.y = -0.5; 
         scene.add(wasteGroup);
@@ -870,7 +889,6 @@
             itemsList.push(mesh);
         }
 
-        // 2. ผิวน้ำ 2D สีฟ้า
         const waterGeo = new THREE.PlaneGeometry(20, 20);
         waterMat = new THREE.MeshBasicMaterial({ color: 0x00aaff, transparent: true, opacity: 0.6, side: THREE.DoubleSide });
         const water = new THREE.Mesh(waterGeo, waterMat);
@@ -878,7 +896,6 @@
         water.position.y = -0.2;
         scene.add(water);
 
-        // 3. เอฟเฟกต์น้ำไหล
         flowLines = new THREE.Group();
         flowLines.position.y = -0.19; 
         scene.add(flowLines);
@@ -892,7 +909,6 @@
             flowLines.add(line);
         }
 
-        // ระบบฝน
         const rainCount = 1000; 
         const rainGeo = new THREE.BufferGeometry(); 
         const rainPos = new Float32Array(rainCount * 3); 
@@ -927,7 +943,6 @@
         }
         animate();
 
-        // [ใหม่] ปุ่มจำลองที่ร่ม
         document.getElementById('shadeBtn').addEventListener('click', (e) => {
             isInShade = !isInShade;
             if(isInShade) {
@@ -966,7 +981,7 @@
     function initMap() {
         if(map) { map.invalidateSize(); return; }
         
-        map = L.map('map').setView([6.425, 101.825], 13); // พิกัดนราธิวาส
+        map = L.map('map').setView([6.425, 101.825], 13);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: 'Tiles &copy; Esri'
         }).addTo(map);
@@ -1005,55 +1020,126 @@
     };
 
     // ==========================================
-    // 🧠 AI วิเคราะห์ระบบ 3 ชั้น (Delta pH + Weather API)
+    // [อัปเกรด] ฟังก์ชันเช็กสถานะการเชื่อมต่อบอร์ด
+    // ==========================================
+    function checkBoardStatus() {
+        const now = Date.now();
+        // ถ้าไม่มีข้อมูลส่งมาเกิน 5 นาที (300000 ms) ถือว่าบอร์ดออฟไลน์
+        if (now - lastBoardActivityTime > 300000) {
+            isBoardOnline = false;
+        }
+    }
+
+    // ==========================================
+    // 🧠 AI วิเคราะห์ระบบ (ทำงานเมื่อบอร์ดออนไลน์เท่านั้น)
     // ==========================================
     window.runAIAndPowerLogic = function() {
         const hour = new Date().getHours();
         const now = Date.now();
         let solarPower = 0;
         
-        // 1. ระบบหน่วยความจำระยะสั้น (Short-term Memory Buffer) คำนวณ Delta pH
         phBuffer.push({ time: now, ph: currentPh });
-        // คัดกรองเก็บเฉพาะข้อมูลที่อยู่ในช่วง 10 นาที (600000 ms)
         phBuffer = phBuffer.filter(item => now - item.time <= DELTA_TIME_WINDOW);
-        
-        let oldestPh = phBuffer[0].ph;
+        let oldestPh = phBuffer[0]?.ph || currentPh;
         let deltaPh = Math.abs(currentPh - oldestPh);
 
-        // 2. คำนวณพลังงานอิงจากเวลาจริง + API ฝน + ปุ่มที่ร่ม
-        if (hour >= 6 && hour <= 18) {
-            solarPower = isRaining ? 15 : 50; 
+        // คำนวณพลังงานอิงจากเวลาจริง + API สภาพอากาศ
+        let baseSolarPower = 0;
+        let currentMin = new Date().getMinutes();
+        let timeFloat = hour + (currentMin / 60);
+
+        if (timeFloat >= 6.5 && timeFloat < 9.0) {
+            baseSolarPower = 10;
+        } else if (timeFloat >= 9.0 && timeFloat < 11.0) {
+            baseSolarPower = 27;
+        } else if (timeFloat >= 11.0 && timeFloat < 14.0) {
+            baseSolarPower = 40;
+        } else if (timeFloat >= 14.0 && timeFloat < 16.5) {
+            baseSolarPower = 22;
+        } else if (timeFloat >= 16.5 && timeFloat < 18.0) {
+            baseSolarPower = 5;
+        } else {
+            baseSolarPower = 0;
         }
+
         if (isInShade) {
-            solarPower = 0; 
+            solarPower = 0;
             document.getElementById('shade-status').innerText = "(ติดร่มเงา)";
         } else {
             document.getElementById('shade-status').innerText = "";
+            let cloudMultiplier = 1.0 - (cloudPercent * 0.008); 
+            let tempLoss = 0;
+            if (currentTemp > 25) {
+                tempLoss = (currentTemp - 25) * 0.004; 
+            }
+            
+            let finalEfficiency = cloudMultiplier - tempLoss;
+            if (finalEfficiency < 0) finalEfficiency = 0.1; 
+            if (isRaining) finalEfficiency = finalEfficiency * 0.5; 
+            
+            solarPower = Math.round(baseSolarPower * finalEfficiency);
         }
         
         let systemLoad = isPumpOn ? 100 : 2; 
+        let netPower = solarPower - systemLoad; 
 
         document.getElementById('solar-watt').innerText = solarPower + " W";
         document.getElementById('pump-watt').innerText = systemLoad + " W";
 
-        let battWh = 108;
-        let netPower = solarPower - systemLoad; 
-        let battTimeMsg = "";
-
-        if (netPower >= 0) {
-            battTimeMsg = "ชาร์จไฟเข้า (ทำงานต่อเนื่อง)";
-            document.getElementById('batt-time').className = "text-success mb-0 mt-1 fw-bold";
-        } else {
-            let dischargeRate = Math.abs(netPower); 
-            let hoursLeft = battWh / dischargeRate; 
-            let hrs = Math.floor(hoursLeft);
-            let mins = Math.floor((hoursLeft - hrs) * 60);
-            battTimeMsg = `${hrs} ชม. ${mins} นาที`;
-            document.getElementById('batt-time').className = isPumpOn ? "text-danger mb-0 mt-1 fw-bold" : "text-warning mb-0 mt-1 fw-bold";
+        // Hardware Sync
+        if (currentVoltage !== null) {
+            if (currentVoltage >= 12.6) {
+                currentBattWh = MAX_BATT_WH; 
+            } else if (currentVoltage <= 10.5) {
+                currentBattWh = 0; 
+            }
         }
-        document.getElementById('batt-time').innerText = battTimeMsg;
 
-        // 3. AI วิเคราะห์ภัยพิบัติ (อิง API ฝนตก + Delta pH กะทันหัน)
+        let deltaMs = now - lastLogicTime;
+        lastLogicTime = now;
+        
+        checkBoardStatus(); // เช็กสถานะบอร์ดทุกครั้งที่รันลอจิก
+
+        // [อัปเกรด] อัปเดตแบตเตอรี่เฉพาะเมื่อบอร์ด "ออนไลน์" เท่านั้น
+        if (isBoardOnline) {
+            let deltaHours = deltaMs / 3600000; 
+            currentBattWh += (netPower * deltaHours);
+            if (currentBattWh > MAX_BATT_WH) currentBattWh = MAX_BATT_WH;
+            if (currentBattWh < 0) currentBattWh = 0;
+
+            if(db) { set(ref(db, 'system/battery_wh'), currentBattWh); }
+
+            let battTimeMsg = "";
+            if (currentBattWh <= 0) {
+                battTimeMsg = "แบตเตอรี่หมด!";
+                document.getElementById('batt-time').className = "text-danger mb-0 mt-1 fw-bold";
+            } else if (netPower >= 0) {
+                if (currentBattWh >= MAX_BATT_WH) {
+                    battTimeMsg = "แบตเตอรี่เต็ม (100%)";
+                } else {
+                    battTimeMsg = `กำลังชาร์จ (+${netPower}W)`;
+                }
+                document.getElementById('batt-time').className = "text-success mb-0 mt-1 fw-bold";
+            } else {
+                let dischargeRate = Math.abs(netPower); 
+                let hoursLeft = currentBattWh / dischargeRate; 
+                let hrs = Math.floor(hoursLeft);
+                let mins = Math.floor((hoursLeft - hrs) * 60);
+                battTimeMsg = `${hrs} ชม. ${mins} นาที`;
+                document.getElementById('batt-time').className = isPumpOn ? "text-danger mb-0 mt-1 fw-bold" : "text-warning mb-0 mt-1 fw-bold";
+            }
+            
+            let percent = ((currentBattWh / MAX_BATT_WH) * 100).toFixed(1);
+            document.getElementById('batt-time').innerText = `${battTimeMsg} (${percent}%)`;
+
+        } else {
+            // ถ้าระบบยังไม่มีการเชื่อมต่อ ให้แสดงสถานะรอ
+            document.getElementById('batt-time').className = "text-secondary mb-0 mt-1";
+            document.getElementById('batt-time').innerText = "รอข้อมูลจากบอร์ด...";
+            // ไม่หักลด currentBattWh ปล่อยแช่ไว้แบบนั้น
+        }
+
+        // 3. AI วิเคราะห์ภัยพิบัติ
         let disasterBox = document.getElementById('disaster-alert-box');
         let dTitle = document.getElementById('disaster-title');
         let dDesc = document.getElementById('disaster-desc');
@@ -1098,7 +1184,6 @@
             let itemsToShow = Math.floor((fillPercent / 100) * totalItems);
             itemsList.forEach((mesh, index) => { mesh.visible = index < itemsToShow; });
             
-            // ปรับเอฟเฟกต์แสงและฝนใน 3D อัตโนมัติจาก API
             if (isRaining) {
                 ambientLight.intensity = 0.3; 
                 sunLight.intensity = 0.1; 
@@ -1133,20 +1218,41 @@
         }
     };
     
-    // เรียกใช้งาน API, Map และ 3D
     setTimeout(() => {
         initThreeJS();
         initMap();
-        fetchNarathiwatWeather(); // ดึง API สภาพอากาศ
-        setInterval(fetchNarathiwatWeather, 15 * 60 * 1000); // ดึงซ้ำทุก 15 นาที
-        setInterval(window.runAIAndPowerLogic, 10000); 
+        fetchNarathiwatWeather(); 
+        setInterval(fetchNarathiwatWeather, 15 * 60 * 1000); 
+        setInterval(window.runAIAndPowerLogic, 1000); 
     }, 1000);
 
     // ==========================================
     // INITIALIZATION & FIREBASE 
     // ==========================================
     if (db) {
-        // กราฟหน้าแรก
+        
+        get(ref(db, 'system/battery_wh')).then((snapshot) => {
+            if(snapshot.exists()) {
+                currentBattWh = snapshot.val();
+            } else {
+                currentBattWh = MAX_BATT_WH;
+                set(ref(db, 'system/battery_wh'), currentBattWh);
+            }
+            lastLogicTime = Date.now(); 
+        });
+
+        onValue(ref(db, 'sensor/voltage'), (snapshot) => {
+            if (snapshot.exists()) {
+                currentVoltage = snapshot.val();
+                
+                // ถ้ารับค่าได้ ถือว่าบอร์ดออนไลน์
+                isBoardOnline = true;
+                lastBoardActivityTime = Date.now();
+                
+                if(window.runAIAndPowerLogic) window.runAIAndPowerLogic();
+            }
+        });
+
         const d = new Date();
         const todayStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
         
@@ -1204,9 +1310,15 @@
                 document.getElementById('today-min-ph').innerText = `Min: ${globalMin.toFixed(2)}`;
             }
             
+            // [อัปเกรด] ตัวรับค่า pH 
             onValue(ref(db, 'sensor/ph'), (snap) => {
                 const val = snap.val() || 0;
                 currentPh = val; 
+                
+                // ถ้ารับค่าได้ ถือว่าบอร์ดออนไลน์
+                isBoardOnline = true;
+                lastBoardActivityTime = Date.now();
+                
                 document.getElementById('ph-display').innerText = val.toFixed(2);
                 
                 const circle = document.getElementById('ph-circle-ui');
@@ -1232,9 +1344,14 @@
             });
         });
 
+        // [อัปเกรด] ตัวรับค่า ระยะทาง 
         onValue(ref(db, 'sensor/distance'), (snapshot) => {
             const dist = snapshot.val() || 0;
             currentDist = dist; 
+            
+            // ถ้ารับค่าได้ ถือว่าบอร์ดออนไลน์
+            isBoardOnline = true;
+            lastBoardActivityTime = Date.now();
             
             const iconUI = document.getElementById('trash-icon-ui');
             const statusUI = document.getElementById('trash-current-status');
