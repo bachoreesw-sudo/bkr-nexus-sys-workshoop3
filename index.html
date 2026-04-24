@@ -453,7 +453,7 @@
             <div class="d-flex align-items-center justify-content-between">
                 <div>
                     <h5 class="mb-1 fw-bold text-white"><i class="fa-solid fa-book-open text-info me-2"></i> คู่มือการใช้งานระบบ (User Manual)</h5>
-                    <small class="text-info">คลิกเพื่ออ่านคำแนะนำ ข้อควรระวัง และข้อจำกัดในการใช้งาน</small>
+                    <small class="text-info">คลิกเพื่ออ่านคำแนะนำ ฟังก์ชันครอบคลุม และข้อควรระวังของระบบ</small>
                 </div>
                 <i class="fa-solid fa-chevron-right fs-4 text-info"></i>
             </div>
@@ -563,34 +563,43 @@
             <div class="modal-body p-4 p-md-5">
                 <div class="row">
                     <div class="col-md-6 book-page-left mb-4 mb-md-0">
-                        <h5 class="manual-topic"><i class="fa-solid fa-desktop"></i> 1. วิธีการใช้งานระบบพื้นฐาน</h5>
+                        <h5 class="manual-topic"><i class="fa-solid fa-desktop"></i> 1. วิธีการใช้งานเมนูหลักและ UI</h5>
                         <ul class="manual-list">
-                            <li><strong>โหมดการเชื่อมต่อ:</strong> ระบบเริ่มต้นทำงานใน "Cloud Mode" (ผ่าน Wi-Fi และ Firebase) หากอินเทอร์เน็ตมีปัญหา สามารถกดปุ่มไอคอน Bluetooth ที่มุมขวาบนเพื่อสลับมาสั่งงานระยะใกล้ได้</li>
-                            <li><strong>การมอนิเตอร์กราฟ (Zoom & Pan):</strong> กราฟหน้าแรกจะแสดงข้อมูลของวันนี้ทั้งวัน คุณสามารถใช้นิ้วถ่าง (Pinch) หรือใช้ลูกกลิ้งเมาส์ (Scroll) เพื่อซูมเข้าไปดูช่วงเวลาที่ต้องการแบบเจาะลึกได้</li>
-                            <li><strong>การควบคุมปั๊มน้ำ:</strong> ในเมนู Relay รองรับการสั่งเปิด-ปิดทันที, การตั้งเวลาถอยหลัง (Countdown) เพื่อให้ปั๊มปิดเองอัตโนมัติ และการตั้งตารางเวลา (Schedule Timer) ให้ปั๊มทำงานตามเวลาที่กำหนดทุกวัน</li>
-                            <li><strong>การดูสรุปข้อมูลย้อนหลัง:</strong> เข้าเมนู "ประวัติย้อนหลัง" เลือกวันที่ต้องการ ระบบจะสรุปค่า pH สูงสุด-ต่ำสุด พร้อมระบุเวลา และแสดงความถี่ในการแจ้งเตือนขยะเต็มของวันนั้นๆ</li>
+                            <li><strong>โหมดการเชื่อมต่อ:</strong> ระบบเริ่มต้นทำงานใน "Cloud Mode" (ผ่าน Wi-Fi) หากเน็ตมีปัญหา กดปุ่ม Bluetooth มุมขวาบนเพื่อสลับคำสั่งระยะใกล้ได้</li>
+                            <li><strong>กราฟ Realtime & History:</strong> กราฟหน้าแรกแสดงข้อมูลของวันนี้ สามารถถ่างนิ้ว (Pinch) หรือกลิ้งเมาส์ (Scroll) เพื่อซูมดูช่วงเวลาได้ หากต้องการดูวันอื่น ให้เข้าเมนู "ประวัติย้อนหลัง" ระบบจะสรุปค่า pH ต่ำ-สูงสุด และเวลาแจ้งเตือนขยะเต็มให้</li>
+                            <li><strong>ควบคุมปั๊มน้ำ (Relay):</strong> สั่งเปิด-ปิดทันที, ตั้งเวลาถอยหลัง (Countdown) หรือตั้งตารางเวลาอัตโนมัติ (Schedule Timer) ให้ทำงานทุกวัน</li>
+                            <li><strong>แผนที่ 2D (จุดเฝ้าระวัง):</strong> สามารถ <strong>"คลิกบนแผนที่"</strong> เพื่อปักหมุดจุดเฝ้าระวัง หมุดจะเปลี่ยนสีตามสถานะระบบ (ฟ้า=ปกติ, เหลือง=ขยะเต็ม, แดง=วิกฤต) และสามารถคลิกที่หมุดเพื่อลบออกได้</li>
+                            <li><strong>จำลองสถานการณ์ 3D:</strong> โมเดลถังขยะ 3D จะอัปเดตปริมาณขยะจำลองตามเซนเซอร์จริง และสภาพอากาศรอบๆ จะอิงตาม API ของนราธิวาส (มีฝนตกจำลองหากตรวจพบพายุ)</li>
                         </ul>
 
-                        <h5 class="manual-topic mt-4"><i class="fa-solid fa-gears"></i> 2. ข้อมูลเชิงลึกของระบบ</h5>
+                        <h5 class="manual-topic mt-4"><i class="fa-solid fa-brain"></i> 2. ระบบ AI ภัยพิบัติ & จัดการพลังงาน</h5>
                         <ul class="manual-list">
-                            <li><strong>เกณฑ์การแจ้งเตือนขยะ:</strong> เซ็นเซอร์ Ultrasonic ถูกตั้งค่าไว้ที่ระยะ <strong>น้อยกว่า 30 ซม.</strong> หากระยะขยะใกล้เซ็นเซอร์เกินค่านี้ ระบบจะแจ้งเตือนสถานะ "เต็ม!" และเปลี่ยนเป็นกรอบสีแดงทันที</li>
-                            <li><strong>เกณฑ์สีของค่า pH:</strong> กรอบวงกลม pH จะเปลี่ยนสีตามค่าความเป็นกรด-ด่าง ได้แก่ สีเหลือง (pH < 6.5), สีเขียวปกติ (pH 6.5 - 7.5), และสีแดง (pH > 7.5)</li>
+                            <li><strong>AI สมองกลภัยพิบัติ:</strong> ระบบดึงข้อมูลพยากรณ์อากาศราย 15 นาที นำมาวิเคราะห์ร่วมกับการเปลี่ยนแปลงกะทันหันของค่า pH (Delta pH) เพื่อแจ้งเตือน 3 รูปแบบ: <br>
+                            - <em>น้ำป่าหลาก</em> (ฝนตกหนัก + pH แกว่งรุนแรง)<br>
+                            - <em>น้ำทะเลหนุน</em> (ฝนตกพายุ + ค่าด่างสูง)<br>
+                            - <em>แหล่งน้ำแห้งขอด</em> (อุณหภูมิสูง + ค่าด่างสูงในช่วงบ่าย)</li>
+                            <li><strong>จำลองแบตเตอรี่ (12V 9A):</strong> ระบบคำนวณกำลังไฟ Solar Charge จากเวลา, ปริมาณเมฆ และอุณหภูมิ คุณสามารถกดปุ่ม <strong>"ที่ร่ม"</strong> ในจอ 3D เพื่อจำลองผลกระทบเมื่อบอร์ดไม่โดนแดด (0W) ระบบจะคำนวณเวลาที่แบตเตอรี่จะหมดให้แบบ Real-time</li>
                         </ul>
                     </div>
 
                     <div class="col-md-6 book-page-right">
-                        <h5 class="manual-topic text-warning"><i class="fa-solid fa-triangle-exclamation"></i> 3. ข้อควรระวังในการบำรุงรักษา</h5>
+                        <h5 class="manual-topic text-warning"><i class="fa-solid fa-gears"></i> 3. ข้อมูลเซนเซอร์และการบำรุงรักษา</h5>
                         <ul class="manual-list">
-                            <li><strong>เซ็นเซอร์วัดค่า pH:</strong> หัววัดแก้วมีความเปราะบางสูง <strong>ห้ามปล่อยให้หัววัดแห้งเด็ดขาด</strong> หลังการใช้งานควรล้างด้วยน้ำกลั่น และเก็บรักษาในน้ำยา KCL เสมอ การวัดในของเหลวที่มีอุณหภูมิสูงเกินไปอาจทำให้อายุการใช้งานสั้นลง</li>
-                            <li><strong>เซ็นเซอร์ Ultrasonic (HC-SR04):</strong> เป็นอุปกรณ์อิเล็กทรอนิกส์ที่ไม่กันน้ำ ควรติดตั้งในมุมที่หลีกเลี่ยงน้ำฝนสาด หรือความชื้นสะสมโดยตรง เพื่อป้องกันการลัดวงจร</li>
-                            <li><strong>กล่องคอนโทรล (ESP32):</strong> ควรตรวจสอบซีลยางหรือกล่องกันน้ำอย่างสม่ำเสมอ หากมีแมลงหรือความชื้นเข้าไปเกาะที่บอร์ด อาจทำให้ระบบสั่งการ Relay รวนหรือไฟลัดวงจรได้</li>
+                            <li><strong>เกณฑ์สีของค่า pH:</strong> กรอบวงกลมหน้าหลักจะเปลี่ยนสีตามสถานะ: <br>
+                                - <strong>สีเหลือง</strong>: เป็นกรดอ่อน (pH < 6.5)<br>
+                                - <strong>สีเขียว</strong>: ค่ากลางปลอดภัย (pH 6.5 - 7.5)<br>
+                                - <strong>สีแดง</strong>: เป็นด่าง/วิกฤต (pH > 7.5)</li>
+                            <li><strong>การดูแลหัววัด pH:</strong> หัววัดแก้วมีความเปราะบางสูง <strong>ห้ามปล่อยให้หัววัดแห้งเด็ดขาด</strong> หลังการใช้งานควรล้างด้วยน้ำกลั่น และเก็บรักษาในน้ำยา KCL เสมอ</li>
+                            <li><strong>เซนเซอร์ Ultrasonic (JSN-SR04T):</strong> <strong>หัวโพรบ (สายส่งสัญญาณ) เป็นแบบกันน้ำ</strong> ทนทานต่อละอองฝนและความชื้นเหนือผิวน้ำ แต่ <strong>กล่องวงจรควบคุมสายสีดำไม่กันน้ำ</strong> ต้องเก็บติดตั้งในกล่องกันน้ำ (Waterproof Box) ของ ESP32 ให้มิดชิด</li>
+                            <li><strong>เกณฑ์แจ้งเตือนขยะ:</strong> ระยะวัดถูกตั้งไว้ <strong>น้อยกว่า 30 ซม.</strong> หากระยะใกล้น้อยกว่านี้ ระบบจะเปลี่ยนการแจ้งเตือนเป็นสีแดง (เต็ม!)</li>
                         </ul>
 
                         <h5 class="manual-topic text-danger mt-4"><i class="fa-solid fa-ban"></i> 4. ข้อจำกัดของระบบ (Limitations)</h5>
                         <ul class="manual-list">
-                            <li><strong>การสะท้อนคลื่นเสียงขยะ:</strong> หากขยะมีลักษณะนุ่ม (เช่น ผ้า, โฟม) หรือวางทับถมในรูปทรงลาดเอียงรุนแรง คลื่นเสียงอาจสะท้อนกลับไม่เต็มที่ ทำให้การวัดความสูงของขยะเกิดความคลาดเคลื่อนได้</li>
-                            <li><strong>ระยะการเชื่อมต่อ Bluetooth:</strong> ทำงานได้เสถียรที่สุดในระยะไม่เกิน <strong>10 เมตร</strong> (ในพื้นที่โล่ง) หากมีกำแพงหนากั้น สัญญาณอาจขาดหายได้</li>
-                            <li><strong>การพึ่งพาอินเทอร์เน็ต:</strong> หากจุดติดตั้งบอร์ด Wi-Fi หลุดหรือสัญญาณอ่อน ข้อมูลแบบ Real-time และการบันทึก History บนเว็บกราฟจะไม่ถูกอัปเดตจนกว่าจะเชื่อมต่อได้อีกครั้ง</li>
+                            <li><strong>การสะท้อนคลื่นเสียงขยะ (JSN-SR04T):</strong> มุมกระจายเสียงของ JSN จะกว้างกว่า HC-SR04 เดิม หากติดตั้งในถังท่อแคบๆ อาจเกิดการสะท้อนผนังถัง ควรติดตั้งให้ทำมุมตั้งฉากกับผิวน้ำ/ผิวขยะ และระวังขยะที่มีลักษณะนุ่มดูดซับเสียง (เช่น โฟม/ผ้า)</li>
+                            <li><strong>ระยะการเชื่อมต่อ Bluetooth:</strong> ทำงานได้เสถียรในระยะไม่เกิน <strong>10 เมตร</strong> (ในพื้นที่โล่ง)</li>
+                            <li><strong>ดีเลย์ของ AI สภาพอากาศ:</strong> ข้อมูลเมฆ อุณหภูมิ และฝน (API) ถูกตั้งให้ดึงอัปเดตทุก 15 นาที เพื่อประหยัดโควต้า อาจไม่ได้สะท้อนสภาพฝนตก ณ วินาทีนั้นแบบเป๊ะๆ</li>
+                            <li><strong>การพึ่งพาอินเทอร์เน็ต:</strong> หากจุดติดตั้งบอร์ด Wi-Fi หลุด แบตเตอรี่จะไม่สามารถซิงก์ข้อมูลบนเว็บได้ จนกว่าจะเชื่อมต่อสำเร็จอีกครั้ง</li>
                         </ul>
                     </div>
                 </div>
@@ -1179,12 +1188,26 @@
 
         // 4. สั่งเปลี่ยนสีสถานะระบบหลัก
         let statusHex = '#00aaff'; 
-        if (currentDist < 10) statusHex = '#ffdd00'; 
+        
+        // แก้ไข Logic สีสถานะและ 3D ตรงนี้ตามที่ผู้ใช้ต้องการ
+        if (currentDist > 0 && currentDist <= 30) {
+             statusHex = '#ff003c'; // ขยะเต็ม สีแดง
+        } else if (currentDist > 30 && currentDist <= 60) {
+             statusHex = '#ffdd00'; // เริ่มมีขยะ สีเหลือง
+        }
+        
         if (currentPh < 6.0 || currentPh > 8.0 || deltaPh >= 0.8) statusHex = '#ff003c'; 
         
         if(is3DInit) {
             waterMat.color.setHex(statusHex.replace('#', '0x'));
-            let fillPercent = Math.max(0, Math.min(100, ((30 - currentDist) / 25) * 100)); 
+            
+            // แก้ไข Logic 3D: 0 cm = 0%, 30 cm = 100% ล้นถัง, >100 cm = 0%
+            let fillPercent = 0;
+            if (currentDist > 0 && currentDist <= 100) {
+                 fillPercent = Math.max(0, Math.min(100, ((100 - currentDist) / 70) * 100)); 
+            }
+            
+            // อัปเดตแอนิเมชันให้เนียนขึ้น
             let itemsToShow = Math.floor((fillPercent / 100) * totalItems);
             itemsList.forEach((mesh, index) => { mesh.visible = index < itemsToShow; });
             
@@ -1227,7 +1250,7 @@
         initMap();
         fetchNarathiwatWeather(); 
         setInterval(fetchNarathiwatWeather, 15 * 60 * 1000); 
-        setInterval(window.runAIAndPowerLogic, 1000); 
+        setInterval(window.runAIAndPowerLogic, 100);  // เพิ่มความถี่การอัปเดต UI หน้าเว็บเป็นทุกๆ 0.1 วินาที เพื่อให้ 3D ลื่นขึ้น (อ่านค่าจากตัวแปรไม่ได้ยิง API รัวๆ)
     }, 1000);
 
     // ==========================================
@@ -1370,6 +1393,7 @@
             const statusUI = document.getElementById('trash-current-status');
             const cardUI = document.getElementById('trash-card-ui');
 
+            // แก้ไข Logic การแจ้งเตือนขยะ UI
             if(dist > 0 && dist < 30) {
                 iconUI.className = "fa-solid fa-triangle-exclamation fs-1 me-3";
                 iconUI.style.color = "var(--neon-red)";
@@ -1382,6 +1406,13 @@
                 const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
                 document.getElementById('trash-time-display').innerText = `ตรวจพบขยะเต็มล่าสุด: วันนี้ ${timeStr} น.`;
                 set(ref(db, 'sensor/last_trash_time'), timeStr);
+            } else if (dist == 0) {
+                iconUI.className = "fa-solid fa-trash-can fs-1 me-3";
+                iconUI.style.color = "var(--neon-green)";
+                statusUI.innerText = `สถานะขยะ: ว่างเปล่า (0.0 cm)`;
+                statusUI.style.color = "var(--neon-green)";
+                cardUI.style.borderLeftColor = "var(--neon-green)";
+                cardUI.style.background = "rgba(0, 255, 102, 0.05)";
             } else {
                 iconUI.className = "fa-solid fa-trash-can fs-1 me-3";
                 iconUI.style.color = "var(--neon-green)";
@@ -1537,7 +1568,7 @@
         try {
             indicator.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> SCANNING...`;
             const device = await navigator.bluetooth.requestDevice({
-                filters: [{ name: 'ESP32_Agri_Board' }],
+                filters: [{ name: 'BKR_NEXUS_BLE' }],
                 optionalServices: ['19b10000-e8f2-537e-4f6c-d104768a1214']
             });
             const server = await device.gatt.connect();
