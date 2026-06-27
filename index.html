@@ -318,6 +318,57 @@
             border-radius: 20px;
             border: 1px solid rgba(0, 243, 255, 0.2);
         }
+
+        /* ================= [เพิ่มใหม่] CSS ปุ่มดาวน์โหลดแอป ================= */
+        .app-download-card {
+            background: linear-gradient(90deg, rgba(0,255,102,0.08) 0%, rgba(0,0,0,0) 100%);
+            border-left: 5px solid var(--neon-green);
+        }
+
+        .app-store-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            padding: 10px 18px;
+            transition: 0.3s;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .app-store-btn:hover {
+            background: rgba(0, 255, 102, 0.1);
+            border-color: var(--neon-green);
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.3);
+            transform: translateY(-3px);
+            color: #fff;
+        }
+
+        .app-store-btn img.app-icon-img {
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: #1a233a;
+        }
+
+        .app-store-btn .app-btn-text {
+            text-align: left;
+            line-height: 1.2;
+        }
+
+        .app-store-btn .app-btn-text small {
+            color: #aaa;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .app-store-btn .app-btn-text strong {
+            font-size: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -456,6 +507,34 @@
                     <small class="text-info">คลิกเพื่ออ่านคำแนะนำ ฟังก์ชันครอบคลุม และข้อควรระวังของระบบ</small>
                 </div>
                 <i class="fa-solid fa-chevron-right fs-4 text-info"></i>
+            </div>
+        </div>
+
+        <!-- [เพิ่มใหม่] กล่องดาวน์โหลดแอปพลิเคชัน Android / iOS -->
+        <div class="glass-card app-download-card mt-2 text-start p-3">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div>
+                    <h5 class="mb-1 fw-bold text-white"><i class="fa-solid fa-mobile-screen-button text-success me-2"></i> ดาวน์โหลดแอปพลิเคชัน NEXUS SYS</h5>
+                    <small class="text-success">ติดตามและควบคุมระบบได้ทุกที่ผ่านแอปมือถือ (Android / iOS)</small>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <!-- TODO: เปลี่ยน href เป็นลิงก์ Google Play จริง และเปลี่ยนรูปไอคอนแอปที่ src -->
+                    <a href="#" target="_blank" rel="noopener" class="app-store-btn" id="android-app-link">
+                        <img class="app-icon-img" id="android-app-icon" src="https://via.placeholder.com/76x76.png?text=Icon" alt="NEXUS SYS Android App Icon">
+                        <div class="app-btn-text">
+                            <small>ดาวน์โหลดที่</small>
+                            <br><strong><i class="fa-brands fa-google-play me-1"></i> Google Play</strong>
+                        </div>
+                    </a>
+                    <!-- TODO: เปลี่ยน href เป็นลิงก์ App Store จริง และเปลี่ยนรูปไอคอนแอปที่ src -->
+                    <a href="#" target="_blank" rel="noopener" class="app-store-btn" id="ios-app-link">
+                        <img class="app-icon-img" id="ios-app-icon" src="https://via.placeholder.com/76x76.png?text=Icon" alt="NEXUS SYS iOS App Icon">
+                        <div class="app-btn-text">
+                            <small>ดาวน์โหลดที่</small>
+                            <br><strong><i class="fa-brands fa-apple me-1"></i> App Store</strong>
+                        </div>
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -795,10 +874,117 @@
     let isFirstDistLoad = true;
     let isFirstVoltLoad = true;
     
-    // ตัวแปรจัดการแบตเตอรี่ Persistent State
-    const MAX_BATT_WH = 108; // ความจุแบต 12V 9A = 108 Watt-hours
-    let currentBattWh = MAX_BATT_WH;
-    let lastLogicTime = Date.now();
+    // ==============================================================
+    // [แก้ไขใหม่] ระบบแบตเตอรี่: เปลี่ยนจาก "การคำนวณเดา" (Solar/Load Model)
+    // เป็น "การรายงานแบบเรียลไทม์" จากแรงดันแบตเตอรี่จริงที่ ESP32 วัดได้
+    // ผ่าน Voltage Divider แล้วส่งขึ้น Firebase ที่ path /sensor/voltage
+    // ==============================================================
+    const BATT_NOMINAL_CAPACITY_AH = 9;     // ความจุแบตเตอรี่ 12V 9A ตามสเปคที่ระบุไว้เดิม
+    const BATT_FULL_VOLTAGE = 12.7;         // แรงดันโดยประมาณที่ถือว่า "เต็ม 100%" สำหรับแบตตะกั่วกรด (SLA) 12V
+    const BATT_EMPTY_VOLTAGE = 11.0;        // แรงดันโดยประมาณที่ถือว่า "หมด 0%" (ไม่ควรปล่อยให้ต่ำกว่านี้เพื่อยืดอายุแบต)
+
+    // ตารางอ้างอิง Discharge Curve ของแบตตะกั่วกรด (SLA) 12V แบบประมาณ (Voltage -> %SOC)
+    // ใช้ Linear interpolation ระหว่างจุดเพื่อความแม่นยำมากกว่าเส้นตรงเส้นเดียว
+    const SLA_DISCHARGE_CURVE = [
+        { v: 12.70, pct: 100 },
+        { v: 12.50, pct: 90 },
+        { v: 12.42, pct: 80 },
+        { v: 12.32, pct: 70 },
+        { v: 12.20, pct: 60 },
+        { v: 12.06, pct: 50 },
+        { v: 11.90, pct: 40 },
+        { v: 11.75, pct: 30 },
+        { v: 11.58, pct: 20 },
+        { v: 11.31, pct: 10 },
+        { v: 11.00, pct: 0 }
+    ];
+
+    function voltageToPercent(v) {
+        if (v >= SLA_DISCHARGE_CURVE[0].v) return 100;
+        if (v <= SLA_DISCHARGE_CURVE[SLA_DISCHARGE_CURVE.length - 1].v) return 0;
+        for (let i = 0; i < SLA_DISCHARGE_CURVE.length - 1; i++) {
+            const hi = SLA_DISCHARGE_CURVE[i];
+            const lo = SLA_DISCHARGE_CURVE[i + 1];
+            if (v <= hi.v && v >= lo.v) {
+                const ratio = (v - lo.v) / (hi.v - lo.v);
+                return lo.pct + ratio * (hi.pct - lo.pct);
+            }
+        }
+        return 0;
+    }
+
+    // เก็บ buffer ของค่าแรงดันล่าสุดไว้คำนวณ "เทรนด์การเปลี่ยนแปลงจริง" (V/ชม.)
+    // เพื่อประมาณเวลาที่แบตจะหมด/เต็ม จากข้อมูลจริงที่วัดได้ ไม่ใช่จากโมเดลโซลาร์ที่เดาไว้ล่วงหน้า
+    let voltageHistoryBuffer = [];
+    const VOLT_TREND_WINDOW_MS = 20 * 60 * 1000; // ใช้ข้อมูล 20 นาทีล่าสุดในการคำนวณเทรนด์
+
+    function updateBatteryDisplayRealtime() {
+        const battTimeEl = document.getElementById('batt-time');
+
+        // ถ้าบอร์ดออฟไลน์ หรือยังไม่มีค่าแรงดันส่งเข้ามาเลย ให้รอข้อมูลจริง ไม่เดาค่า
+        if (!isBoardOnline || currentVoltage === null) {
+            battTimeEl.className = "text-secondary mb-0 mt-1";
+            battTimeEl.innerText = "💤 รอข้อมูลใหม่จากบอร์ด...";
+            return;
+        }
+
+        const now = Date.now();
+        voltageHistoryBuffer.push({ t: now, v: currentVoltage });
+        voltageHistoryBuffer = voltageHistoryBuffer.filter(p => now - p.t <= VOLT_TREND_WINDOW_MS);
+
+        const percent = voltageToPercent(currentVoltage);
+        const percentStr = percent.toFixed(1);
+
+        // คำนวณเทรนด์จริงจากข้อมูลแรงดันที่วัดได้ (V ต่อ ชม.) เพื่อประมาณเวลาคงเหลือ
+        let trendMsg = "";
+        let statusClass = "text-info mb-0 mt-1 fw-bold";
+
+        if (voltageHistoryBuffer.length >= 2) {
+            const oldest = voltageHistoryBuffer[0];
+            const deltaV = currentVoltage - oldest.v;
+            const deltaHours = (now - oldest.t) / 3600000;
+
+            if (deltaHours > 0.01) { // มีช่วงเวลาเพียงพอให้คำนวณเทรนด์ได้อย่างมีความหมาย
+                const voltsPerHour = deltaV / deltaHours;
+
+                if (currentVoltage <= BATT_EMPTY_VOLTAGE) {
+                    trendMsg = "แบตเตอรี่ใกล้หมด!";
+                    statusClass = "text-danger mb-0 mt-1 fw-bold";
+                } else if (voltsPerHour > 0.005) {
+                    // แรงดันกำลังเพิ่มขึ้นจริง = กำลังชาร์จอยู่
+                    if (percent >= 99) {
+                        trendMsg = "แบตเตอรี่เต็ม (100%)";
+                    } else {
+                        const voltsToFull = BATT_FULL_VOLTAGE - currentVoltage;
+                        const hoursToFull = voltsToFull / voltsPerHour;
+                        const hrs = Math.floor(hoursToFull);
+                        const mins = Math.floor((hoursToFull - hrs) * 60);
+                        trendMsg = `กำลังชาร์จ (เต็มใน ~${hrs} ชม. ${mins} นาที)`;
+                    }
+                    statusClass = "text-success mb-0 mt-1 fw-bold";
+                } else if (voltsPerHour < -0.005) {
+                    // แรงดันกำลังลดลงจริง = กำลังจ่ายไฟออก (discharge)
+                    const voltsToEmpty = currentVoltage - BATT_EMPTY_VOLTAGE;
+                    const hoursToEmpty = voltsToEmpty / Math.abs(voltsPerHour);
+                    const hrs = Math.floor(hoursToEmpty);
+                    const mins = Math.floor((hoursToEmpty - hrs) * 60);
+                    trendMsg = `เหลือใช้งานได้ ~${hrs} ชม. ${mins} นาที`;
+                    statusClass = isPumpOn ? "text-danger mb-0 mt-1 fw-bold" : "text-warning mb-0 mt-1 fw-bold";
+                } else {
+                    // แรงดันค่อนข้างทรงตัว
+                    trendMsg = "แรงดันคงที่ (Standby)";
+                    statusClass = "text-info mb-0 mt-1 fw-bold";
+                }
+            } else {
+                trendMsg = "กำลังเก็บข้อมูลเทรนด์...";
+            }
+        } else {
+            trendMsg = "กำลังเก็บข้อมูลเทรนด์...";
+        }
+
+        battTimeEl.className = statusClass;
+        battTimeEl.innerText = `${trendMsg} (${percentStr}% | ${currentVoltage.toFixed(2)}V)`;
+    }
 
     // ==========================================
     // ฟังก์ชันดึงสภาพอากาศ อ.เมือง นราธิวาส
@@ -1100,57 +1286,11 @@
         document.getElementById('solar-watt').innerText = solarPower + " W";
         document.getElementById('pump-watt').innerText = systemLoad + " W";
 
-        // Hardware Sync
-        if (currentVoltage !== null) {
-            if (currentVoltage >= 12.6) {
-                currentBattWh = MAX_BATT_WH; 
-            } else if (currentVoltage <= 10.5) {
-                currentBattWh = 0; 
-            }
-        }
-
-        let deltaMs = now - lastLogicTime;
-        lastLogicTime = now;
-        
         checkBoardStatus(); // เช็กสถานะบอร์ด
 
-        // อัปเดตแบตเตอรี่เฉพาะเมื่อบอร์ด "ออนไลน์จริงๆ" เท่านั้น
-        if (isBoardOnline) {
-            let deltaHours = deltaMs / 3600000; 
-            currentBattWh += (netPower * deltaHours);
-            if (currentBattWh > MAX_BATT_WH) currentBattWh = MAX_BATT_WH;
-            if (currentBattWh < 0) currentBattWh = 0;
-
-            if(db) { set(ref(db, 'system/battery_wh'), currentBattWh); }
-
-            let battTimeMsg = "";
-            if (currentBattWh <= 0) {
-                battTimeMsg = "แบตเตอรี่หมด!";
-                document.getElementById('batt-time').className = "text-danger mb-0 mt-1 fw-bold";
-            } else if (netPower >= 0) {
-                if (currentBattWh >= MAX_BATT_WH) {
-                    battTimeMsg = "แบตเตอรี่เต็ม (100%)";
-                } else {
-                    battTimeMsg = `กำลังชาร์จ (+${netPower}W)`;
-                }
-                document.getElementById('batt-time').className = "text-success mb-0 mt-1 fw-bold";
-            } else {
-                let dischargeRate = Math.abs(netPower); 
-                let hoursLeft = currentBattWh / dischargeRate; 
-                let hrs = Math.floor(hoursLeft);
-                let mins = Math.floor((hoursLeft - hrs) * 60);
-                battTimeMsg = `${hrs} ชม. ${mins} นาที`;
-                document.getElementById('batt-time').className = isPumpOn ? "text-danger mb-0 mt-1 fw-bold" : "text-warning mb-0 mt-1 fw-bold";
-            }
-            
-            let percent = ((currentBattWh / MAX_BATT_WH) * 100).toFixed(1);
-            document.getElementById('batt-time').innerText = `${battTimeMsg} (${percent}%)`;
-
-        } else {
-            // ถ้าระบบยังไม่มีการเชื่อมต่อจริงๆ (บล็อกแคชแล้ว)
-            document.getElementById('batt-time').className = "text-secondary mb-0 mt-1";
-            document.getElementById('batt-time').innerText = "💤 รอข้อมูลใหม่จากบอร์ด...";
-        }
+        // [แก้ไขใหม่] อัปเดตสถานะแบตเตอรี่จากแรงดันจริงแบบ Real-time
+        // (ไม่ใช้การคำนวณ Solar/Load model เดาอีกต่อไป)
+        updateBatteryDisplayRealtime();
 
         // 3. AI วิเคราะห์ภัยพิบัติ
         let disasterBox = document.getElementById('disaster-alert-box');
@@ -1257,17 +1397,9 @@
     // INITIALIZATION & FIREBASE 
     // ==========================================
     if (db) {
-        
-        get(ref(db, 'system/battery_wh')).then((snapshot) => {
-            if(snapshot.exists()) {
-                currentBattWh = snapshot.val();
-            } else {
-                currentBattWh = MAX_BATT_WH;
-                set(ref(db, 'system/battery_wh'), currentBattWh);
-            }
-            lastLogicTime = Date.now(); 
-        });
 
+        // [แก้ไขใหม่] รับค่าแรงดันแบตเตอรี่จริงแบบ Real-time จาก ESP32 ผ่าน /sensor/voltage
+        // แทนที่การอ่านค่าจาก /system/battery_wh (ค่าที่ได้จากการคำนวณ/เดาแบบเดิม)
         onValue(ref(db, 'sensor/voltage'), (snapshot) => {
             if (snapshot.exists()) {
                 currentVoltage = snapshot.val();
